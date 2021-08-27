@@ -2,22 +2,16 @@
 
 // puts character in string *src with length *n at place k
 // if length is not enough, string is reallocated
-void put_char_dyn (char **src, char c, size_t *n, int k) {
-    if (k >= *n) {
-        *n *= 2;
-        *src = (char *) realloc (*src, *n * sizeof (char));
-    }
-    (*src)[k] = c;
-}
+void put_char_dyn (char **src, char symbol, size_t *len, int index);
 
 int my_puts (const char *str) {
     assert(str);
 
-    putchar (*str);
-
-    while (*++str) 
-        if( putchar (*str) == EOF)
+    while (*str) {
+        if (putchar (*str) == EOF)
             return EOF;
+        str++;
+    }
 
     return putchar ('\n');
 }
@@ -36,7 +30,7 @@ size_t strlen (const char *str) {
     assert (str);
 
     size_t len = 0;
-    while (*str++)
+    while (*(str++))
         len++;
     return len;
 }
@@ -47,7 +41,7 @@ char *strcpy (char *dest, const char *src) {
     assert (dest != src);
 
     char *orig = dest;
-    while (*dest++ = *src++) { ; }
+    while (*(dest++) = *(src++)) { ; }
 
     return orig;
 }
@@ -59,11 +53,11 @@ char *strncpy (char *dest, const char *src, size_t count) {
 
     char *orig = dest;
     count++;
-    while (--count && (*dest++ = *src++)) { ; }
+    while (--count && (*(dest++) = *(src++))) { ; }
 
     if (count)
         while (--count > 0)
-            *dest++ = 0;
+            *(dest++) = 0;
         
     return orig;
 }
@@ -75,10 +69,10 @@ char *strcat (char *dest, const char *src) {
 
     char *orig = dest;
     if (dest)
-        while (*++dest)
+        while (*(++dest))
             { ; }
 
-    while (*dest++ = *src++) { ; }
+    while (*(dest++) = *(src++)) { ; }
 
     return orig;
 }
@@ -90,15 +84,15 @@ char *strncat (char *dest, const char *src, size_t count) {
 
     char *orig = dest;
     if (dest)
-        while (*++dest)
+        while (*(++dest))
             { ; }
             
     count++;
-    while (--count && (*dest++ = *src++)) { ; }
+    while (--count && (*(dest++) = *(src++))) { ; }
 
     if (count)
         while (--count > 0)
-            *dest++ = 0;
+            *(dest++) = 0;
 
     return orig;   
 }
@@ -106,11 +100,12 @@ char *strncat (char *dest, const char *src, size_t count) {
 char *my_fgets (char *str, int count, FILE *stream) {
     assert (str);
     assert (stream);
+    assert (!ferror (stream));
     
     if (count < 1)
         return NULL;
 
-    if (count == 1){
+    if (count == 1) {
         str[0] = 0;
         return str;
     }
@@ -118,6 +113,7 @@ char *my_fgets (char *str, int count, FILE *stream) {
     char *orig = str;
     while (--count) {
         int c = fgetc (stream);
+
         if (c == EOF) {
             if (feof (stream))
                 if (orig != str)
@@ -128,9 +124,9 @@ char *my_fgets (char *str, int count, FILE *stream) {
         }
 
         if (c == '\n') {
-            *str++ = '\n';
+            *(str++) = '\n';
             *str = 0;
-            return str;
+            return orig;
         }
 
         *str++ = c;
@@ -138,17 +134,35 @@ char *my_fgets (char *str, int count, FILE *stream) {
     
     *str = 0;
 
-    return str;
+    return orig;
 }
 
 char *strdup (const char *str1) {
     assert (str1);
-    char *str2 = (char *) calloc (strlen (str1), sizeof (char));
+
+    char *str2 = (char *) calloc (strlen (str1) + 1, sizeof (char));
+
     return strcpy (str2, str1);
 }
 
+void put_char_dyn (char **src, char symbol, size_t *len, int index) {
+    assert (src);
+    assert (*src);
+    assert (len);
+
+    if (index >= *len) {
+        *len *= 2;
+        *src = (char *) realloc (*src, (*len) * sizeof (char));
+    }
+    
+    (*src)[index] = symbol;
+}
+
 ssize_t my_getline (char **lineptr, size_t *n, FILE *stream) {
+    assert (lineptr);
+    assert (n);
     assert (stream);
+    assert (!ferror (stream));
     
     if (*lineptr == NULL) {
         *n = 2;
