@@ -1,5 +1,57 @@
 #include "onegin.h"
 
+void onegin () {
+    FILE *f_in = fopen_err ("poem.txt", "r");
+    if (!f_in)
+        return;
+
+    FILE *f_out = fopen ("output.txt", "a");
+    if (!f_out) 
+        return;
+
+    int filled = 0;
+    char **strings = read_text_file (f_in, &filled);
+
+    char **orig = (char **) calloc (filled, sizeof (*strings));
+    memcpy (orig, strings, filled*sizeof(*strings));
+
+    fputs ("/////////////////////////////////////////////////////\n"
+           "Sorted by first symbols\n"
+           "/////////////////////////////////////////////////////\n\n",
+           f_out
+    );
+    
+    qsort (strings, filled, sizeof (*strings), cmp_first_alnum);
+    fprint_strings (strings, filled, f_out);
+
+    fputs ("\n\n/////////////////////////////////////////////////////\n"
+           "Sorted by last symbols\n"
+           "/////////////////////////////////////////////////////\n\n",
+           f_out
+    );
+    
+    qsort (strings, filled, sizeof (*strings), cmp_rhyme);
+    fprint_strings (strings, filled, f_out);
+
+    fputs ("\n\n/////////////////////////////////////////////////////\n"
+           "Original text\n"
+           "/////////////////////////////////////////////////////\n\n",
+           f_out
+    );
+    
+    fprint_strings (orig, filled, f_out);
+
+    // freeing memory and closing files
+
+    for (int k = 0; k < filled; k++)
+        free (strings[k]);
+    free (strings);
+    free (orig);
+
+    fclose (f_in);
+    fclose (f_out);
+}
+
 int has_alnum (const char *str) {
     while (*str)
         if (isalnum (*(str++)))
@@ -65,4 +117,53 @@ int cmp_first_alnum (const void *a, const void *b) {
 
     //printf("%s %s", str1, str2);
     return strcmp (str1, str2);
+}
+
+int cmp_rhyme (const void* a, const void* b) {
+    const char *str1 = *(const char **) a, 
+        *str2 = *(const char **) b;
+
+    const char *orig1 = str1,
+        *orig2 = str2;
+
+    while (*str1)
+        str1++;
+    while (*str2)
+        str2++;
+
+    while (!isalnum (*str1))
+        str1--;
+    while (!isalnum (*str2))
+        str2--;
+
+    while (*str1 == *str2 && str1 != orig1 && str2 != orig2) {   
+        str1--;
+        str2--;
+    }
+
+    if (*str1 != *str2)
+            return *str1 - *str2;
+
+    if (str1 != orig1)
+        return 1;
+    if (str2 != orig2)
+        return -1;
+
+    return 0;
+}
+
+void fprint_strings (char **strings, int len, FILE *file_out) {
+    for (int i = 0; i < len; i++)
+        fputs (strings[i], file_out);
+}
+
+FILE *fopen_err (const char *name, const char *mode) {
+    FILE *file = fopen (name, mode);
+    
+    if (ferror (file)) {
+        printf ("ERROR: opening file \"%s\" failed!\n", file);
+        return NULL;
+    }
+
+    return file;
 }
