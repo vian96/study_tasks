@@ -20,38 +20,44 @@ char **read_text_file (FILE *file_in, int *num_of_lines) {
     assert (num_of_lines);
 
     *num_of_lines = 0;
+    
+    // it may return too much symbols bc of text mode, see:
+    // neowin.net/forum/topic/555097-cc-fseek-ftell-with-text-files/?do=findComment&comment=588494916
+    fseek(file_in, 0, SEEK_END);
+    int cnt_sym = ftell(file_in);
+    fseek (file_in, 0, SEEK_SET);
+    
+    printf("Size: %d\n", cnt_sym);
+    
+    char *symbols = (char *) calloc (cnt_sym + 1, sizeof (char));
 
-    // counting all chars and lines from file
-    int ch = 0;
-    int cnt_sym = 0, cnt_lines = 1;
-    while ((ch = fgetc (file_in)) != EOF) {
-        cnt_sym++;
+    printf("Read %d\n",fread (symbols, sizeof (char), cnt_sym, file_in));
 
+    //puts (symbols);
+    //printf ("|| %d %d %d %d|\n", symbols[cnt_sym-4], symbols[cnt_sym-5], symbols[cnt_sym-6], symbols[cnt_sym-8]);
+
+    // counting all lines from file
+    int cnt_lines = 1;
+
+    for (int i = 0; i < cnt_sym; i++) 
         // TODO skip empty strings
-        if (ch == '\n')
+        if (symbols[i] == '\n') 
             cnt_lines++;
-    }
 
-    // reading all characters 
-    char *symbols = (char *) calloc (cnt_sym + cnt_lines, sizeof (char));
     char **strings = (char **) calloc (cnt_lines, sizeof (char *));
-
     strings[0] = symbols;
-    int sym = 0, line = 1;
+    int line = 1;
+    printf("Lines: %d\n", cnt_lines);
 
-    rewind (file_in);
-
-    while ((ch = fgetc (file_in)) != EOF) {
-        symbols[sym++] = ch;
-
-        if (ch == '\n') {
-            symbols[sym++] = '\0';
-            strings[line++] = symbols + sym;
+    for (int i = 0; i < cnt_sym; i++) 
+        // TODO skip empty strings
+        if (symbols[i] == '\n') {
+            strings[line++] = symbols + i + 1; // +1 to avoid pointing to 0
+            symbols[i] = 0;
         }
-    }
     
     *num_of_lines = cnt_lines;
-
+    
     return strings;
 }
 
@@ -60,8 +66,10 @@ void fprint_strings (char **strings, int len, FILE *file_out) {
     assert (file_out);
     assert (!ferror (file_out));
   
-    for (int i = 0; i < len; i++)
+    for (int i = 0; i < len; i++) {
         fputs (strings[i], file_out);
+        fputc ('\n', file_out);
+    }
 }
 
 int has_alnum (const char *str) {

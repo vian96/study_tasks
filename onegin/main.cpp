@@ -25,6 +25,9 @@ void onegin () {
     int num_of_lines = 0;
     char **strings = read_text_file (f_in, &num_of_lines);
 
+
+    //return;
+
     char *orig = *strings;
 
     fputs ("/////////////////////////////////////////////////////\n"
@@ -56,6 +59,7 @@ void onegin () {
     for (int line = 0; line < num_of_lines; line++) {
         while (orig[sym_ind])
             fputc (orig[sym_ind++], f_out);
+        fputc ('\n', f_out);
         sym_ind++;
     }
 
