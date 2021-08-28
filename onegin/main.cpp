@@ -18,17 +18,15 @@ void onegin () {
     if (!f_in)
         return;
 
+    int num_of_lines = 0;
+    char **strings = read_text_file (f_in, &num_of_lines);
+    char *orig = *strings;
+    
+    fclose (f_in);  
+
     FILE *f_out = fopen ("output.txt", "a");
     if (!f_out) 
         return;
-
-    int num_of_lines = 0;
-    char **strings = read_text_file (f_in, &num_of_lines);
-
-
-    //return;
-
-    char *orig = *strings;
 
     fputs ("/////////////////////////////////////////////////////\n"
            "Sorted by first symbols\n"
@@ -58,16 +56,18 @@ void onegin () {
     int sym_ind = 0;
     for (int line = 0; line < num_of_lines; line++) {
         while (orig[sym_ind])
-            fputc (orig[sym_ind++], f_out);
-        fputc ('\n', f_out);
+            sym_ind++;
+        orig[sym_ind] = '\n';
         sym_ind++;
     }
+    orig[sym_ind - 1] = 0;
+
+    fputs (orig, f_out);
+
+    fclose (f_out);
 
     // freeing memory and closing files
 
     free (orig);
     free (strings);
-
-    fclose (f_in);
-    fclose (f_out);
 }

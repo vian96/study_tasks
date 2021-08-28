@@ -26,15 +26,10 @@ char **read_text_file (FILE *file_in, int *num_of_lines) {
     fseek(file_in, 0, SEEK_END);
     int cnt_sym = ftell(file_in);
     fseek (file_in, 0, SEEK_SET);
-    
-    printf("Size: %d\n", cnt_sym);
-    
+        
     char *symbols = (char *) calloc (cnt_sym + 1, sizeof (char));
-
-    printf("Read %d\n",fread (symbols, sizeof (char), cnt_sym, file_in));
-
-    //puts (symbols);
-    //printf ("|| %d %d %d %d|\n", symbols[cnt_sym-4], symbols[cnt_sym-5], symbols[cnt_sym-6], symbols[cnt_sym-8]);
+    cnt_sym = fread (symbols, sizeof (char), cnt_sym, file_in);
+    symbols[cnt_sym] = 0;
 
     // counting all lines from file
     int cnt_lines = 1;
@@ -47,8 +42,7 @@ char **read_text_file (FILE *file_in, int *num_of_lines) {
     char **strings = (char **) calloc (cnt_lines, sizeof (char *));
     strings[0] = symbols;
     int line = 1;
-    printf("Lines: %d\n", cnt_lines);
-
+    
     for (int i = 0; i < cnt_sym; i++) 
         // TODO skip empty strings
         if (symbols[i] == '\n') {
