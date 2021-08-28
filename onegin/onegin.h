@@ -7,9 +7,6 @@
 // max length of strings read from file
 const int MAX_STR_LEN = 300;
 
-// main function of project
-void onegin ();
-
 // opens file and returns it on success
 // if failed it prints error and return NULL
 FILE *fopen_err (const char *name, const char *mode);

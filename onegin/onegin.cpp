@@ -1,57 +1,5 @@
 #include "onegin.h"
 
-void onegin () {
-    FILE *f_in = fopen_err ("poem.txt", "r");
-    if (!f_in)
-        return;
-
-    FILE *f_out = fopen ("output.txt", "a");
-    if (!f_out) 
-        return;
-
-    int filled = 0;
-    char **strings = read_text_file (f_in, &filled);
-
-    char **orig = (char **) calloc (filled, sizeof (*strings));
-    memcpy (orig, strings, filled * sizeof (*strings));
-
-    fputs ("/////////////////////////////////////////////////////\n"
-           "Sorted by first symbols\n"
-           "/////////////////////////////////////////////////////\n\n",
-           f_out
-    );
-    
-    qsort (strings, filled, sizeof (*strings), cmp_first_alnum);
-    fprint_strings (strings, filled, f_out);
-
-    fputs ("\n\n/////////////////////////////////////////////////////\n"
-           "Sorted by last symbols\n"
-           "/////////////////////////////////////////////////////\n\n",
-           f_out
-    );
-    
-    qsort (strings, filled, sizeof (*strings), cmp_rhyme);
-    fprint_strings (strings, filled, f_out);
-
-    fputs ("\n\n/////////////////////////////////////////////////////\n"
-           "Original text\n"
-           "/////////////////////////////////////////////////////\n\n",
-           f_out
-    );
-    
-    fprint_strings (orig, filled, f_out);
-
-    // freeing memory and closing files
-
-    for (int k = 0; k < filled; k++)
-        free (strings[k]);
-    free (strings);
-    free (orig);
-
-    fclose (f_in);
-    fclose (f_out);
-}
-
 FILE *fopen_err (const char *name, const char *mode) {
     assert (name);
     assert (mode);
@@ -73,39 +21,36 @@ char **read_text_file (FILE *file_in, int *num_of_lines) {
 
     *num_of_lines = 0;
 
-    int num_strings = 300;
-    char **strings = (char **) calloc (num_strings, sizeof (char*));
+    // counting all chars and lines from file
+    int ch = 0;
+    int cnt_sym = 0, cnt_lines = 1;
+    while ((ch = fgetc (file_in)) != EOF) {
+        cnt_sym++;
 
-    for (int i = 0; i < num_strings; i++)
-        strings[i] = (char *) calloc (MAX_STR_LEN, sizeof (char));
-
-    while (1) {
-        if (fgets (strings[*num_of_lines], MAX_STR_LEN, file_in) == NULL) {
-            if (feof (file_in))
-                break;
-            
-            if (ferror (file_in)) {
-                printf ("ERROR: reading from file failed!\n");
-                return 0;
-            }
-        }
-
-        if (has_alnum (strings[*num_of_lines]))
-            (*num_of_lines)++;
-
-        if (*num_of_lines == num_strings) {
-            num_strings *= 2;
-            strings = (char **) realloc (strings, num_strings * sizeof (*strings));
-
-            for (int i = *num_of_lines; i < num_strings; i++)
-                strings[i] = (char *) calloc (MAX_STR_LEN, sizeof (char));
-        }
+        // TODO skip empty strings
+        if (ch == '\n')
+            cnt_lines++;
     }
 
-    for (int i = *num_of_lines; i < num_strings; i++)
-        free (strings[i]);
+    // reading all characters 
+    char *symbols = (char *) calloc (cnt_sym + cnt_lines, sizeof (char));
+    char **strings = (char **) calloc (cnt_lines, sizeof (char *));
 
-    strings = (char **) realloc (strings, *num_of_lines * sizeof (char *));
+    strings[0] = symbols;
+    int sym = 0, line = 1;
+
+    rewind (file_in);
+
+    while ((ch = fgetc (file_in)) != EOF) {
+        symbols[sym++] = ch;
+
+        if (ch == '\n') {
+            symbols[sym++] = '\0';
+            strings[line++] = symbols + sym;
+        }
+    }
+    
+    *num_of_lines = cnt_lines;
 
     return strings;
 }
@@ -149,10 +94,10 @@ int cmp_rhyme (const void* a, const void* b) {
     assert (b);
 
     const char *str1 = *(const char **) a, 
-        *str2 = *(const char **) b;
+               *str2 = *(const char **) b;
 
     const char *orig1 = str1,
-        *orig2 = str2;
+               *orig2 = str2;
 
     while (*str1)
         str1++;
@@ -179,4 +124,3 @@ int cmp_rhyme (const void* a, const void* b) {
 
     return 0;
 }
-
