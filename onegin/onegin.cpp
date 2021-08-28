@@ -13,7 +13,7 @@ void onegin () {
     char **strings = read_text_file (f_in, &filled);
 
     char **orig = (char **) calloc (filled, sizeof (*strings));
-    memcpy (orig, strings, filled*sizeof(*strings));
+    memcpy (orig, strings, filled * sizeof (*strings));
 
     fputs ("/////////////////////////////////////////////////////\n"
            "Sorted by first symbols\n"
@@ -52,11 +52,18 @@ void onegin () {
     fclose (f_out);
 }
 
-int has_alnum (const char *str) {
-    while (*str)
-        if (isalnum (*(str++)))
-            return 1;
-    return 0;
+FILE *fopen_err (const char *name, const char *mode) {
+    assert (name);
+    assert (mode);
+    
+    FILE *file = fopen (name, mode);
+    
+    if (ferror (file)) {
+        printf ("ERROR: opening file \"%s\" failed!\n", name);
+        return NULL;
+    }
+
+    return file;
 }
 
 char **read_text_file (FILE *file_in, int *num_of_lines) {
@@ -73,9 +80,7 @@ char **read_text_file (FILE *file_in, int *num_of_lines) {
         strings[i] = (char *) calloc (MAX_STR_LEN, sizeof (char));
 
     while (1) {
-        char *res = fgets (strings[*num_of_lines], MAX_STR_LEN, file_in);
-
-        if (res == NULL) {
+        if (fgets (strings[*num_of_lines], MAX_STR_LEN, file_in) == NULL) {
             if (feof (file_in))
                 break;
             
@@ -83,8 +88,6 @@ char **read_text_file (FILE *file_in, int *num_of_lines) {
                 printf ("ERROR: reading from file failed!\n");
                 return 0;
             }
-            
-            continue;
         }
 
         if (has_alnum (strings[*num_of_lines]))
@@ -94,32 +97,57 @@ char **read_text_file (FILE *file_in, int *num_of_lines) {
             num_strings *= 2;
             strings = (char **) realloc (strings, num_strings * sizeof (*strings));
 
-            for (int i = num_strings / 2; i < num_strings; i++)
+            for (int i = *num_of_lines; i < num_strings; i++)
                 strings[i] = (char *) calloc (MAX_STR_LEN, sizeof (char));
         }
     }
 
     for (int i = *num_of_lines; i < num_strings; i++)
         free (strings[i]);
+
     strings = (char **) realloc (strings, *num_of_lines * sizeof (char *));
 
     return strings;
 }
 
+void fprint_strings (char **strings, int len, FILE *file_out) {
+    assert (strings);
+    assert (file_out);
+    assert (!ferror (file_out));
+  
+    for (int i = 0; i < len; i++)
+        fputs (strings[i], file_out);
+}
+
+int has_alnum (const char *str) {
+    assert (str);
+
+    while (*str)
+        if (isalnum (*(str++)))
+            return 1;
+
+    return 0;
+}
+
 int cmp_first_alnum (const void *a, const void *b) {
+    assert (a);
+    assert (b);
+    
     const char *str1 = *(const char **) a, 
         *str2 = *(const char **) b;
 
-    while (!isalnum (*str1))
+    while (!isalnum (*str1) && *str1)
         str1++;
-    while (!isalnum (*str2))
+    while (!isalnum (*str2) && *str2)
         str2++;
 
-    //printf("%s %s", str1, str2);
     return strcmp (str1, str2);
 }
 
 int cmp_rhyme (const void* a, const void* b) {
+    assert (a);
+    assert (b);
+
     const char *str1 = *(const char **) a, 
         *str2 = *(const char **) b;
 
@@ -131,9 +159,9 @@ int cmp_rhyme (const void* a, const void* b) {
     while (*str2)
         str2++;
 
-    while (!isalnum (*str1))
+    while (!isalnum (*str1) && str1 != orig1)
         str1--;
-    while (!isalnum (*str2))
+    while (!isalnum (*str2) && str2 != orig2)
         str2--;
 
     while (*str1 == *str2 && str1 != orig1 && str2 != orig2) {   
@@ -152,18 +180,3 @@ int cmp_rhyme (const void* a, const void* b) {
     return 0;
 }
 
-void fprint_strings (char **strings, int len, FILE *file_out) {
-    for (int i = 0; i < len; i++)
-        fputs (strings[i], file_out);
-}
-
-FILE *fopen_err (const char *name, const char *mode) {
-    FILE *file = fopen (name, mode);
-    
-    if (ferror (file)) {
-        printf ("ERROR: opening file \"%s\" failed!\n", file);
-        return NULL;
-    }
-
-    return file;
-}
