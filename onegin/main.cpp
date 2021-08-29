@@ -18,14 +18,15 @@ void onegin () {
     if (!f_in)
         return;
 
+    int num_of_lines = 0;
+    DoubleString *strings = read_text_file (f_in, &num_of_lines);
+    char *orig = strings->begin;
+    
+    fclose (f_in);  
+
     FILE *f_out = fopen ("output.txt", "a");
     if (!f_out) 
         return;
-
-    int num_of_lines = 0;
-    char **strings = read_text_file (f_in, &num_of_lines);
-
-    char *orig = *strings;
 
     fputs ("/////////////////////////////////////////////////////\n"
            "Sorted by first symbols\n"
@@ -33,8 +34,8 @@ void onegin () {
            f_out
     );
     
-    qsort (strings, num_of_lines, sizeof (*strings), cmp_first_alnum);
-    fprint_strings (strings, num_of_lines, f_out);
+    qsort (strings, num_of_lines, sizeof (DoubleString), cmp_first_alnum_DS);
+    print_double_strings (strings, num_of_lines, f_out);
 
     fputs ("\n\n/////////////////////////////////////////////////////\n"
            "Sorted by last symbols\n"
@@ -42,8 +43,8 @@ void onegin () {
            f_out
     );
     
-    qsort (strings, num_of_lines, sizeof (*strings), cmp_rhyme);
-    fprint_strings (strings, num_of_lines, f_out);
+    qsort (strings, num_of_lines, sizeof (DoubleString), cmp_rhyme_DS);
+    print_double_strings (strings, num_of_lines, f_out);
 
     fputs ("\n\n/////////////////////////////////////////////////////\n"
            "Original text\n"
@@ -51,19 +52,12 @@ void onegin () {
            f_out
     );
     
-    // TODO function for printing ?
-    int sym_ind = 0;
-    for (int line = 0; line < num_of_lines; line++) {
-        while (orig[sym_ind])
-            fputc (orig[sym_ind++], f_out);
-        sym_ind++;
-    }
+    fputs (orig, f_out);
+
+    fclose (f_out);
 
     // freeing memory and closing files
 
     free (orig);
     free (strings);
-
-    fclose (f_in);
-    fclose (f_out);
 }
