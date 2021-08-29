@@ -18,8 +18,8 @@ void onegin () {
     if (!f_in)
         return;
 
-    int num_of_lines = 0;
-    DoubleString *strings = read_text_file (f_in, &num_of_lines);
+    int num_lines = 0;
+    StringRef *strings = read_text_file (f_in, &num_lines);
     char *orig = strings->begin;
     
     fclose (f_in);  
@@ -34,8 +34,8 @@ void onegin () {
            f_out
     );
     
-    qsort (strings, num_of_lines, sizeof (DoubleString), cmp_first_alnum_DS);
-    print_double_strings (strings, num_of_lines, f_out);
+    qsort (strings, num_lines, sizeof (StringRef), cmp_first_alnum_SR);
+    fprint_string_ref (strings, num_lines, f_out, 1);
 
     fputs ("\n\n/////////////////////////////////////////////////////\n"
            "Sorted by last symbols\n"
@@ -43,8 +43,8 @@ void onegin () {
            f_out
     );
     
-    qsort (strings, num_of_lines, sizeof (DoubleString), cmp_rhyme_DS);
-    print_double_strings (strings, num_of_lines, f_out);
+    qsort (strings, num_lines, sizeof (StringRef), cmp_rhyme_SR);
+    fprint_string_ref (strings, num_lines, f_out, 1);
 
     fputs ("\n\n/////////////////////////////////////////////////////\n"
            "Original text\n"
@@ -55,8 +55,6 @@ void onegin () {
     fputs (orig, f_out);
 
     fclose (f_out);
-
-    // freeing memory and closing files
 
     free (orig);
     free (strings);

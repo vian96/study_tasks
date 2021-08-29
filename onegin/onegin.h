@@ -7,7 +7,7 @@
 // struct for saving beginning and len of string
 // string can be not null-terminated
 // useful for more effecient sorting by rhyme to access end of string
-struct DoubleString {
+struct StringRef {
     char *begin;
     int len;
 };
@@ -18,18 +18,29 @@ FILE *fopen_err (const char *name, const char *mode);
 
 // reads strings from file file_in to array of char*
 // number of read lines is put into *num_of_lines
-DoubleString *read_text_file (FILE *file_in, int *num_of_lines);
+// returns array of StringRef pointing to lines of text
+StringRef *read_text_file (FILE *file_in, int *num_lines);
 
-// prints array of DoubleString of length len to file_out
-void print_double_strings (DoubleString *strings, int len, FILE *file_out);
+// reads symbols from file 
+// number of read symbols is put into len
+char *read_symbols_file (FILE *file_in, int *len);
 
-// returns 1 if string has any alnum character
-// otherwise 0
-int has_alnum (const char *str);
+// returns size of file 
+// be careful when opening files in text mode,
+// it may return too much symbols, see:
+// neowin.net/forum/topic/555097-cc-fseek-ftell-with-text-files/?do=findComment&comment=588494916
+int size_of_file (FILE *file);
 
-// compares two DoubleStrings in lexicographical order,
+// prints array of StringRef of length len to file_out
+void fprint_string_ref (StringRef *strings, int len, 
+                            FILE *file_out, int ignore_empty);
+
+// checks if str has alphanum characters
+int has_alnum_SR (const StringRef str);
+
+// compares two StringRefs in lexicographical order,
 // ignoring leading not alnum characters 
-int cmp_first_alnum_DS (const void *a, const void *b);
+int cmp_first_alnum_SR (const void *a, const void *b);
 
-// compares two DoubleStrinds by last symbols in lexicographical order
-int cmp_rhyme_DS (const void* a, const void* b);
+// compares two StringRefs by last symbols in lexicographical order
+int cmp_rhyme_SR (const void* a, const void* b);
