@@ -26,7 +26,6 @@ DoubleString *read_text_file (FILE *file_in, int *num_of_lines) {
     fseek(file_in, 0, SEEK_END);
     int cnt_sym = ftell(file_in);
     fseek (file_in, 0, SEEK_SET);
-
     char *symbols = (char *) calloc (cnt_sym + 1, sizeof (char));
     cnt_sym = fread (symbols, sizeof (char), cnt_sym, file_in);
     symbols[cnt_sym] = 0;
