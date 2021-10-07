@@ -20,8 +20,8 @@ void *realloc_ (void *ptr, const size_t len, const size_t size) {
     return realloc (ptr, len * size);
 }
 
-#define malloc() (void)(0)
-#define realloc() (void)(0)
+#define malloc() ((void) 0)
+#define realloc() ((void) 0)
 
 void print_stack_int (const void *elem, FILE *f_out, RetErr *err) {
     if (check_null ((void*) (elem && f_out), err))
@@ -39,7 +39,7 @@ void add_err (RetErr *err, RetErr value) {
     err && (*err = (RetErr)((int)(*err) | (int)value));
 }
 
-DumpMode add_modes (int num, ...) {
+DumpMode add_modes (size_t num, ...) {
     assert (num > 0);
     
     va_list valist;
@@ -50,7 +50,7 @@ DumpMode add_modes (int num, ...) {
 
     DumpMode res = (DumpMode) va_arg (valist, int);
 
-    for (int i = 1; i < num; i++) 
+    for (size_t i = 1; i < num; i++) 
         res = (DumpMode) ((int) res | (int) va_arg (valist, int));
     
     va_end (valist);
@@ -66,6 +66,7 @@ uint64_t calculate_hash (const void *ptr, size_t size) {
 	uint64_t hash = 0;
 
 	for (size_t i = 0; i < size; i++) {
+        //printf ("DEB %d\n", i);
 		hash += (uint8_t) (((char *) ptr) [i]);
 		hash -= (hash << 13) | (hash >> 19);
 	}
@@ -73,12 +74,16 @@ uint64_t calculate_hash (const void *ptr, size_t size) {
 	return hash;
 }
 
+uint64_t calculate_stack_hash (const Stack *stack) {
+    return calculate_hash (stack, (size_t)(&(stack->hash)) - (size_t)stack);
+}
+
 // constructor and destructor
 
 void stack_ctor (Stack *stack, size_t capacity, size_t size_el, RetErr *err) {
     if (!is_empty_stack (stack, err))
         return;
-    
+        
 #ifdef CANARY_PROTECTION
     stack->begin_canary = get_good_canary (&stack->begin_canary);
     stack->end_canary = get_good_canary (&stack->end_canary);
@@ -97,6 +102,10 @@ void stack_ctor (Stack *stack, size_t capacity, size_t size_el, RetErr *err) {
         if (!stack->arr)
             add_err (err, NO_MEMORY);
     }
+    
+#ifdef HASH_PROTECTION
+    stack->hash = calculate_stack_hash (stack);
+#endif // HASH_PROTECTION
 }
 
 void stack_dtor (Stack *stack, RetErr *err) {
@@ -116,6 +125,10 @@ void stack_dtor (Stack *stack, RetErr *err) {
     stack->begin_canary = 0;
     stack->end_canary = 0;
 #endif // CANARY PROTECTION
+
+#ifdef HASH_PROTECTION
+    stack->hash = 0;
+#endif // HASH_PROTECTION
 }
 
 // element access functions
@@ -130,8 +143,7 @@ void stack_push (Stack *stack, const void *value, RetErr *err) {
         stack->capacity = MIN_STACK_SIZE;
 
     if (stack->size == stack->capacity) {
-        stack->capacity *= 2;
-        void *temp = realloc_ (stack->arr, stack->capacity, stack->size_el);
+        void *temp = realloc_ (stack->arr, stack->capacity * 2, stack->size_el);
         
         if (!temp) { 
             add_err (err, NO_MEMORY);
@@ -139,10 +151,20 @@ void stack_push (Stack *stack, const void *value, RetErr *err) {
             return;
         }
 
+        stack->capacity *= 2;
         stack->arr = temp;
     }
 
-    memcpy ((char *)stack->arr + (stack->size++) * (stack->size_el), value, stack->size_el);
+    memcpy (
+        (char *)stack->arr + (stack->size) * (stack->size_el), 
+        value, stack->size_el
+    );
+    
+    stack->size++;
+
+#ifdef HASH_PROTECTION
+    stack->hash = calculate_stack_hash (stack);
+#endif // HASH_PROTECTION
 }
 
 void *stack_pop (Stack *stack, RetErr *err) {
@@ -162,7 +184,13 @@ void *stack_pop (Stack *stack, RetErr *err) {
         stack->arr = realloc_ (stack->arr, stack->capacity, stack->size_el);
     }
 
-    return (char *)(stack->arr) + (--(stack->size)) * stack->size_el;
+    --(stack->size);
+
+#ifdef HASH_PROTECTION
+    stack->hash = calculate_stack_hash (stack);
+#endif // HASH_PROTECTION
+
+    return (char *)(stack->arr) + (stack->size) * stack->size_el;
 }
 
 void *stack_top (const Stack *stack, RetErr *err) {
@@ -180,7 +208,10 @@ void *stack_top (const Stack *stack, RetErr *err) {
 
 // debug functions
 
-void stack_dump (Stack *stack, FILE *f_out, DumpMode mode, void (* print) (const void *elem, FILE *f_out, RetErr *err), RetErr *err) {
+void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode, 
+                    void (* print) (const void *elem, FILE *f_out, RetErr *err),
+                    RetErr *err) {
+    // TODO should i split it into smaller functions?
     // TODO printf line, name, function and so on..
     if (check_null ((void*) (f_out && print), err)) {
         return;
@@ -189,18 +220,17 @@ void stack_dump (Stack *stack, FILE *f_out, DumpMode mode, void (* print) (const
         add_err (err, INVALID_ARG);
         return;
     }
+    
+    fprintf (f_out, "\n-------------STACK DUMP---------------\n");
 
     if (!stack) {
         fprintf (
             f_out,
-            "-------------STACK DUMP---------------\n"
             "ERROR: stack address is NULL!!!!!\n"
             "--------------------------------------\n"
         );
         add_err (err, NULL_PTR);
     }
-
-    fprintf (f_out, "-------------STACK DUMP---------------\n");
 
     bool is_stack_ok = check_stack (stack, err);
     
@@ -237,7 +267,7 @@ void stack_dump (Stack *stack, FILE *f_out, DumpMode mode, void (* print) (const
             RetErr t_err = OK;
             
             fprintf (f_out, "Data from stack: \n");
-            for (int i = 0; i < stack->size; i++) {
+            for (size_t i = 0; i < stack->size; i++) {
                 print ((char*) stack->arr + i * stack->size_el, f_out, &t_err);
             
                 if (t_err) {
@@ -250,12 +280,17 @@ void stack_dump (Stack *stack, FILE *f_out, DumpMode mode, void (* print) (const
         else {
             fprintf (f_out, "Raw data from stack: \n");
 
-            for (int i = 0; i < stack->size * stack->size_el; i++)
+            for (size_t i = 0; i < stack->size * stack->size_el; i++)
                 fprintf (f_out, "%X ", ((char *) stack->arr)[i] & 0xff);
                 
             fputc ('\n', f_out);
         }
     }
+
+    fprintf (
+        f_out,
+        "---------END OF STACK DUMP------------\n\n"
+    );
 
     if (ferror (f_out))
         add_err (err, ERR_WRITING_FILE);
@@ -305,6 +340,16 @@ bool is_valid_stack (const Stack *stack) {
     )
         return 0;
 #endif // CANARY PROTECTION
+
+#ifdef HASH_PROTECTION
+    if (
+        // all are good or all are zero
+        stack->hash != calculate_stack_hash (stack) 
+        &&
+        (stack->size_el || stack->hash)
+    )
+        return 0;
+#endif // HASH_PROTECTION
 
     return 1;
 }

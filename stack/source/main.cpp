@@ -4,12 +4,14 @@
 
 #include "stack.h"
 
+#define deb printf ("DEB %d\n", __LINE__)
+
 int main () {
     Stack stack_int = {};
     RetErr err = OK;
 
     stack_ctor (&stack_int, 10, sizeof (int));
-
+    
     for (int i = 7; i < 15; i++){
         stack_push (&stack_int, &i, &err);
         //printf ("%d %d\n", i, err);

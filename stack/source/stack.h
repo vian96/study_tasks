@@ -17,6 +17,7 @@ struct Stack {
 #ifdef CANARY_PROTECTION
     uint64_t begin_canary;
 #endif
+
     size_t size;
     size_t capacity;
     size_t size_el;
@@ -65,6 +66,8 @@ DumpMode match_dump_mode(DumpMode mode, DumpMode match);
 
 uint64_t calculate_hash (const void *ptr, size_t size);
 
+uint64_t calculate_stack_hash (const Stack *stack);
+
 // constructor and desctructor
 void stack_ctor (Stack *stack, size_t capacity, size_t size_el, RetErr *err = nullptr);
 
@@ -81,7 +84,9 @@ void *stack_top (const Stack *stack, RetErr *err = nullptr);
 void stack_shrink_to_fit (Stack *stack, RetErr *err = nullptr);
 
 // debug functions
-void stack_dump (Stack *stack, FILE *f_out, DumpMode mode, void (* print) (const void *elem, FILE *f_out, RetErr *err), RetErr *err = nullptr);
+void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode, 
+                    void (* print) (const void *elem, FILE *f_out, RetErr *err) = nullptr,
+                    RetErr *err = nullptr);
 
 // stack tests
 bool check_stack (const Stack *stack, RetErr *err);
