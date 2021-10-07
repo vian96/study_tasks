@@ -22,14 +22,18 @@ struct Stack {
     size_t capacity;
     size_t size_el;
     void *arr;
-    
+
+#ifdef HASH_DATA_PROTECTION
+    uint64_t data_hash;
+#endif // HASH_DATA_PROTECTION
+
 #ifdef HASH_PROTECTION
     uint64_t hash;
-#endif
+#endif // HASH_PROTECTION
 
 #ifdef CANARY_PROTECTION
     uint64_t end_canary;
-#endif
+#endif // HASH_PROTECTION
 };
 
 enum RetErr {
@@ -67,6 +71,8 @@ DumpMode match_dump_mode(DumpMode mode, DumpMode match);
 uint64_t calculate_hash (const void *ptr, size_t size);
 
 uint64_t calculate_stack_hash (const Stack *stack);
+
+uint64_t calculate_stack_data_hash (const Stack *stack);
 
 // constructor and desctructor
 void stack_ctor (Stack *stack, size_t capacity, size_t size_el, RetErr *err = nullptr);

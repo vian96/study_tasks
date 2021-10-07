@@ -18,7 +18,7 @@ int main () {
     }
 
     printf ("%d %d %d %d\n", stack_int.arr, stack_int.capacity, stack_int.size, stack_int.size_el);
-    printf ("\n\n\n");
+    printf ("\n");
 
     err = OK; 
     size_t old = stack_int.capacity;

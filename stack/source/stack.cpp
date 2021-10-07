@@ -78,6 +78,10 @@ uint64_t calculate_stack_hash (const Stack *stack) {
     return calculate_hash (stack, (size_t)(&(stack->hash)) - (size_t)stack);
 }
 
+uint64_t calculate_stack_data_hash (const Stack *stack) {
+    return calculate_hash (stack->arr, stack->capacity * stack->size_el);
+}
+
 // constructor and destructor
 
 void stack_ctor (Stack *stack, size_t capacity, size_t size_el, RetErr *err) {
@@ -88,6 +92,10 @@ void stack_ctor (Stack *stack, size_t capacity, size_t size_el, RetErr *err) {
     stack->begin_canary = get_good_canary (&stack->begin_canary);
     stack->end_canary = get_good_canary (&stack->end_canary);
 #endif // CANARY PROTECTION
+
+#ifdef HASH_DATA_PROTECTION
+    stack->data_hash = 0;
+#endif // HASH_DATA_PROTECTION
 
     stack->capacity = capacity;
     stack->size_el = size_el;
@@ -126,6 +134,10 @@ void stack_dtor (Stack *stack, RetErr *err) {
     stack->end_canary = 0;
 #endif // CANARY PROTECTION
 
+#ifdef HASH_DATA_PROTECTION
+    stack->data_hash = 0;
+#endif // HASH_DATA_PROTECTION
+
 #ifdef HASH_PROTECTION
     stack->hash = 0;
 #endif // HASH_PROTECTION
@@ -162,6 +174,10 @@ void stack_push (Stack *stack, const void *value, RetErr *err) {
     
     stack->size++;
 
+#ifdef HASH_DATA_PROTECTION
+    stack->data_hash = calculate_stack_data_hash (stack);
+#endif // HASH_DATA_PROTECTION
+
 #ifdef HASH_PROTECTION
     stack->hash = calculate_stack_hash (stack);
 #endif // HASH_PROTECTION
@@ -182,6 +198,10 @@ void *stack_pop (Stack *stack, RetErr *err) {
         stack->capacity = stack->capacity / 2;
 
         stack->arr = realloc_ (stack->arr, stack->capacity, stack->size_el);
+        
+#ifdef HASH_DATA_PROTECTION
+        stack->data_hash = calculate_stack_data_hash (stack);
+#endif // HASH_DATA_PROTECTION
     }
 
     --(stack->size);
@@ -350,6 +370,16 @@ bool is_valid_stack (const Stack *stack) {
     )
         return 0;
 #endif // HASH_PROTECTION
+
+#ifdef HASH_DATA_PROTECTION
+    if (
+        // all are good or all are zero
+        stack->data_hash != calculate_stack_data_hash (stack) 
+        &&
+        (stack->size_el || stack->data_hash)
+    )
+        return 0;
+#endif // HASH_DATA_PROTECTION
 
     return 1;
 }
