@@ -1,41 +1,50 @@
 #include <stdio.h>
 
-#include "stack.h"
+#include "config.h"
 
-#define print_info printf ("%d %d\n", err, is_valid_stack (&stack_int))
+#include "stack.h"
 
 int main () {
     Stack stack_int = {};
     RetErr err = OK;
-    
-    stack_ctor (&stack_int, 10, sizeof(int), &err);
-    print_info;
-    
-    stack_pop (&stack_int, &err);
-    print_info;
 
-    stack_ctor (&stack_int, 1ll << 55, 4, &err);
-    print_info;
-    
-    stack_dtor (&stack_int, &err);
-    print_info;
-    
-    stack_ctor (&stack_int, 1ll << 55, 4, &err);
-    print_info;
+    stack_ctor (&stack_int, 10, sizeof (int));
 
-    stack_dtor (&stack_int, &err);
-    print_info;
+    for (int i = 7; i < 15; i++){
+        stack_push (&stack_int, &i, &err);
+        //printf ("%d %d\n", i, err);
+    }
 
-    err = OK;
+    printf ("%d %d %d %d\n", stack_int.arr, stack_int.capacity, stack_int.size, stack_int.size_el);
+    printf ("\n\n\n");
 
-    stack_ctor (&stack_int, 10, sizeof(int), &err);
-    print_info;
+    err = OK; 
+    size_t old = stack_int.capacity;
 
-    stack_int.begin_canary = 123;
-    int x = 3;
+    stack_dump (&stack_int, stdout, MAX_DUMP, print_stack_int);
 
-    stack_push (&stack_int, &x, &err);
-    print_info;
+    while (err == OK) {
+        int *x = (int*) stack_pop (&stack_int, &err);
+
+        x && printf ("x: %d ", *x);
+        printf("\n");
+
+        if (!err && old != stack_int.capacity) {
+            printf ("%d : %d -> %d\n", *x, old, stack_int.capacity);
+            old = stack_int.capacity;
+        }
+
+        //if (!err) 
+            //printf ("%d\n", *x);
+    }
+
+    printf ("%d %d %d %d\n", stack_int.arr, stack_int.capacity, stack_int.size, stack_int.size_el);
+
+    stack_dtor (&stack_int);
+
+    printf ("%d %d %d %d\n", stack_int.arr, stack_int.capacity, stack_int.size, stack_int.size_el);
+
+    printf ("DONE");
 
 
     return 0;

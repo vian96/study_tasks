@@ -1,3 +1,5 @@
+// WARNING: this is joke code
+
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>

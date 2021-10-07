@@ -1,3 +1,5 @@
+// WARNING: this is joke code
+
 #include <stdio.h>
 
 #include "stackT.h"
