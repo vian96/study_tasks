@@ -23,6 +23,8 @@ struct Stack {
     size_t size_el;
     void *arr;
 
+// TODO canary(code) instead of ifdef canary...
+
 #ifdef HASH_DATA_PROTECTION
     uint64_t data_hash;
 #endif // HASH_DATA_PROTECTION
@@ -53,10 +55,14 @@ enum DumpMode {
     STACK_MEMB = 1 << 2,
     STACK_DATA_ADDR = 1 << 3,
     STACK_DATA = 1 << 4,
-    
+    STACK_EXPECTED = 1 << 5,
 };
 
-const DumpMode MAX_DUMP = (DumpMode) ((1 << 5) - 1);
+const DumpMode MAX_DUMP = (DumpMode) ((1 << 6) - 1);
+
+DumpMode add_modes (int num, ...);
+
+DumpMode match_dump_mode(DumpMode mode, DumpMode match);
 
 void *realloc_ (void *ptr, const size_t len, const size_t size);
 
@@ -64,15 +70,11 @@ void print_stack_int (const void *elem, FILE *f_out, RetErr *err = nullptr);
 
 void add_err (RetErr *err, RetErr value);
 
-DumpMode add_modes (int num, ...);
+uint64_t calc_hash (const void *ptr, size_t size);
 
-DumpMode match_dump_mode(DumpMode mode, DumpMode match);
+uint64_t calc_stack_hash (const Stack *stack);
 
-uint64_t calculate_hash (const void *ptr, size_t size);
-
-uint64_t calculate_stack_hash (const Stack *stack);
-
-uint64_t calculate_stack_data_hash (const Stack *stack);
+uint64_t calc_stack_data_hash (const Stack *stack);
 
 // constructor and desctructor
 void stack_ctor (Stack *stack, size_t capacity, size_t size_el, RetErr *err = nullptr);

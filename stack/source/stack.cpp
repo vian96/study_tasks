@@ -6,10 +6,18 @@
 
 #ifdef CANARY_PROTECTION
 
-const uint64_t GOOD_CANARY = ((uint64_t)1000 - 7) * 300/*$*/ * 1488 * 1337 * 666 * 228 * 107;
+const uint64_t GOOD_CANARY = ((uint64_t) 1000 - 7) * 300/*$*/ * 1488 * 1337 * 666 * 228 * 107;
 
 uint64_t get_good_canary (const void *ptr) {
     return GOOD_CANARY ^ (uint64_t) ptr;
+}
+
+void set_good_canary (uint64_t *ptr) {
+    *ptr = get_good_canary (ptr);
+}
+
+bool check_canary (const uint64_t *ptr) {
+    return *ptr == get_good_canary (ptr);
 }
 
 #endif // CANARY PROTECTION
@@ -22,22 +30,6 @@ void *realloc_ (void *ptr, const size_t len, const size_t size) {
 
 #define malloc() ((void) 0)
 #define realloc() ((void) 0)
-
-void print_stack_int (const void *elem, FILE *f_out, RetErr *err) {
-    if (check_null ((void*) (elem && f_out), err))
-        return;
-
-    if (!elem || !f_out) {
-        add_err (err, NULL_PTR);
-        return;
-    }
-
-    fprintf (f_out, "%d ", *(int *) elem);
-}
-
-void add_err (RetErr *err, RetErr value) {
-    err && (*err = (RetErr)((int)(*err) | (int)value));
-}
 
 DumpMode add_modes (size_t num, ...) {
     assert (num > 0);
@@ -62,24 +54,39 @@ DumpMode match_dump_mode(DumpMode mode, DumpMode match) {
     return (DumpMode) ((int) (mode) & (int) (match));
 }
 
-uint64_t calculate_hash (const void *ptr, size_t size) {
+void print_stack_int (const void *elem, FILE *f_out, RetErr *err) {
+    if (check_null ((void*) (elem && f_out), err))
+        return;
+
+    if (!elem || !f_out) {
+        add_err (err, NULL_PTR);
+        return;
+    }
+
+    fprintf (f_out, "%d ", *(int*) elem);
+}
+
+void add_err (RetErr *err, RetErr value) {
+    err && (*err = (RetErr)((int)(*err) | (int)value));
+}
+
+uint64_t calc_hash (const void *ptr, size_t size) {
 	uint64_t hash = 0;
 
 	for (size_t i = 0; i < size; i++) {
-        //printf ("DEB %d\n", i);
-		hash += (uint8_t) (((char *) ptr) [i]);
+		hash += (uint8_t) (((char*) ptr) [i]);
 		hash -= (hash << 13) | (hash >> 19);
 	}
 
 	return hash;
 }
 
-uint64_t calculate_stack_hash (const Stack *stack) {
-    return calculate_hash (stack, (size_t)(&(stack->hash)) - (size_t)stack);
+uint64_t calc_stack_hash (const Stack *stack) {
+    return calc_hash (stack, (size_t)(&stack->hash) - (size_t)stack);
 }
 
-uint64_t calculate_stack_data_hash (const Stack *stack) {
-    return calculate_hash (stack->arr, stack->capacity * stack->size_el);
+uint64_t calc_stack_data_hash (const Stack *stack) {
+    return calc_hash (stack->arr, stack->capacity * stack->size_el);
 }
 
 // constructor and destructor
@@ -89,8 +96,8 @@ void stack_ctor (Stack *stack, size_t capacity, size_t size_el, RetErr *err) {
         return;
         
 #ifdef CANARY_PROTECTION
-    stack->begin_canary = get_good_canary (&stack->begin_canary);
-    stack->end_canary = get_good_canary (&stack->end_canary);
+    set_good_canary (&stack->begin_canary);
+    set_good_canary (&stack->end_canary);
 #endif // CANARY PROTECTION
 
 #ifdef HASH_DATA_PROTECTION
@@ -103,8 +110,17 @@ void stack_ctor (Stack *stack, size_t capacity, size_t size_el, RetErr *err) {
     if (capacity) {
         if (capacity < MIN_STACK_SIZE)
             capacity = MIN_STACK_SIZE;
-        
-        stack->arr = calloc (capacity, size_el);
+
+#ifndef CANARY_DATA_PROTECTION 
+        stack->arr = calloc (capacity * size_el, 1);
+#else // not CANARY_DATA_PROTECTION
+        stack->arr = calloc (capacity * size_el + 2 * sizeof (uint64_t), 1);
+        set_good_canary ((uint64_t*) stack->arr);
+        stack->arr = (char*) stack->arr + sizeof (uint64_t);
+
+        set_good_canary ((uint64_t*) ((char*) stack->arr + capacity * size_el));
+#endif // CANARY_DATA_PROTECTION
+
         stack->capacity = capacity;
 
         if (!stack->arr)
@@ -112,17 +128,21 @@ void stack_ctor (Stack *stack, size_t capacity, size_t size_el, RetErr *err) {
     }
     
 #ifdef HASH_PROTECTION
-    stack->hash = calculate_stack_hash (stack);
+    stack->hash = calc_stack_hash (stack);
 #endif // HASH_PROTECTION
 }
 
 void stack_dtor (Stack *stack, RetErr *err) {
     if (!check_stack (stack, err))
         return;
-
+        
     // TODO what to do if there is allocated memory and there is error ?
-
+    
+#ifndef CANARY_DATA_PROTECTION
     free (stack->arr);
+#else // not CANARY_DATA_PROTECTION
+    free ((char*) stack->arr - sizeof (uint64_t));
+#endif // CANARY_DATA_PROTECTION
 
     stack->arr = nullptr;
     stack->capacity = 0;
@@ -155,31 +175,46 @@ void stack_push (Stack *stack, const void *value, RetErr *err) {
         stack->capacity = MIN_STACK_SIZE;
 
     if (stack->size == stack->capacity) {
-        void *temp = realloc_ (stack->arr, stack->capacity * 2, stack->size_el);
+        char *temp = nullptr;
+
+#ifndef CANARY_DATA_PROTECTION
+        temp = realloc_ (stack->arr, stack->capacity * 2, stack->size_el);
+#else // not CANARY_DATA_PROTECTION
+        temp = (char*) realloc_ ((char*) stack->arr - sizeof (uint64_t), 
+                                stack->capacity * 2 * stack->size_el + 2 * sizeof (uint64_t), 1);
+#endif // CANARY_DATA_PROTECTION
         
         if (!temp) { 
             add_err (err, NO_MEMORY);
-            
             return;
         }
 
+#ifdef CANARY_DATA_PROTECTION
+        temp += sizeof (uint64_t);
+
+        set_good_canary ((uint64_t*) (temp + stack->capacity * 2 * stack->size_el));
+
+        if (temp != stack->arr)
+            set_good_canary ((uint64_t*) (temp - sizeof (uint64_t)));
+#endif // CANARY_DATA_PROTECTION
+ 
         stack->capacity *= 2;
         stack->arr = temp;
     }
 
     memcpy (
-        (char *)stack->arr + (stack->size) * (stack->size_el), 
+        (char*) stack->arr + (stack->size) * (stack->size_el), 
         value, stack->size_el
     );
     
     stack->size++;
 
 #ifdef HASH_DATA_PROTECTION
-    stack->data_hash = calculate_stack_data_hash (stack);
+    stack->data_hash = calc_stack_data_hash (stack);
 #endif // HASH_DATA_PROTECTION
 
 #ifdef HASH_PROTECTION
-    stack->hash = calculate_stack_hash (stack);
+    stack->hash = calc_stack_hash (stack);
 #endif // HASH_PROTECTION
 }
 
@@ -197,20 +232,29 @@ void *stack_pop (Stack *stack, RetErr *err) {
     if (stack->size <= stack->capacity / 4 && stack->capacity >= 2 * MIN_STACK_SIZE) {
         stack->capacity = stack->capacity / 2;
 
+#ifndef CANARY_DATA_PROTECTION
         stack->arr = realloc_ (stack->arr, stack->capacity, stack->size_el);
+#else // not CANARY_DATA_PROTECTION
+        char *temp = (char*) realloc_ ((char*) stack->arr - sizeof (uint64_t), 
+                                stack->capacity * stack->size_el + 2 * sizeof (uint64_t), 1);
+        temp += sizeof (uint64_t);
+
+        set_good_canary ((uint64_t*) (temp + stack->capacity * stack->size_el));
+        stack->arr = temp;
+#endif // CANARY_DATA_PROTECTION
         
 #ifdef HASH_DATA_PROTECTION
-        stack->data_hash = calculate_stack_data_hash (stack);
+        stack->data_hash = calc_stack_data_hash (stack);
 #endif // HASH_DATA_PROTECTION
     }
 
-    --(stack->size);
+    --stack->size;
 
 #ifdef HASH_PROTECTION
-    stack->hash = calculate_stack_hash (stack);
+    stack->hash = calc_stack_hash (stack);
 #endif // HASH_PROTECTION
 
-    return (char *)(stack->arr) + (stack->size) * stack->size_el;
+    return (char*) stack->arr + (stack->size) * stack->size_el;
 }
 
 void *stack_top (const Stack *stack, RetErr *err) {
@@ -223,7 +267,7 @@ void *stack_top (const Stack *stack, RetErr *err) {
         return nullptr;
     }
 
-    return (char *)(stack->arr) + (stack->size - 1) * stack->size_el;
+    return (char*) (stack->arr) + (stack->size - 1) * stack->size_el;
 }
 
 // debug functions
@@ -236,7 +280,7 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
     if (check_null ((void*) (f_out && print), err)) {
         return;
     }
-    if (ferror(f_out)) {
+    if (ferror (f_out)) {
         add_err (err, INVALID_ARG);
         return;
     }
@@ -254,18 +298,15 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
 
     bool is_stack_ok = check_stack (stack, err);
     
-    if (!is_stack_ok) {
+    if (!is_stack_ok)
         // TODO add message why there is an error
-        fprintf (f_out, "Stack status: BAD\n");
+        fprintf (f_out, "Stack status: BAD\n"); 
+    else
+        fprintf (f_out, "Stack status: OK\nStack is %sempty\n", 
+                    is_empty_stack (stack) ? "" : "not ");
 
-        return;
-    } 
-    
-    fprintf (f_out, "Stack status: OK\n");
-
-    if (match_dump_mode (mode, STACK_ADDR)) {
-        fprintf (f_out, "Address: %p \n", stack);
-    }
+    if (match_dump_mode (mode, STACK_ADDR))
+        fprintf (f_out, "Address: %p\n", stack);
 
     if (match_dump_mode (mode, STACK_MEMB)) {
         fprintf (
@@ -276,16 +317,107 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
             "    Size of element: %d\n",
             stack->size, stack->capacity, stack->size_el
         );
-    }
-    
-    if (match_dump_mode (mode, STACK_DATA_ADDR)) {
-        fprintf (f_out, "Pointer to data: %p\n", stack->arr);
+#ifdef CANARY_PROTECTION
+        fprintf (
+            f_out, 
+            "    Canary: begin: %llu     end: %llu\n", 
+            stack->begin_canary,
+            stack->end_canary
+        );
+#endif // CANARY PROTECTION
+
+#ifdef CANARY_DATA_PROTECTION
+        if (is_stack_ok && stack->arr != nullptr)
+            fprintf (
+                f_out, 
+                "    Data canary: begin: %llu     end: %llu\n", 
+                *(uint64_t*) ((char*) stack->arr - sizeof (uint64_t)),
+                *(uint64_t*) ((char*) stack->arr + stack->capacity * stack->size_el)
+            );
+        else 
+            fprintf (
+                f_out, 
+                "   Data canary is not avaliable"
+            );
+#endif // CANARY PROTECTION
+
+#ifdef HASH_PROTECTION
+        fprintf (
+            f_out, 
+            "    Hash: %llu\n", 
+            stack->hash
+        );
+#endif // CANARY PROTECTION
+
+#ifdef HASH_DATA_PROTECTION
+        fprintf (
+            f_out, 
+            "    Data hash: %llu\n", 
+            stack->data_hash
+        );
+#endif // CANARY PROTECTION
     }
 
-    if (match_dump_mode (mode, STACK_DATA)) {
+    if (match_dump_mode (mode, STACK_EXPECTED)) {
+        fprintf (
+            f_out,
+            "Expected values:\n"
+        );
+        
+#ifdef CANARY_PROTECTION
+        fprintf (
+            f_out, 
+            "    Canary: begin: %llu     end: %llu\n", 
+            get_good_canary (&stack->begin_canary),
+            get_good_canary (&stack->end_canary)
+        );
+#endif // CANARY PROTECTION
+
+#ifdef CANARY_DATA_PROTECTION
+        if (is_stack_ok && stack->arr != nullptr)
+            fprintf (
+                f_out, 
+                "    Data canary: begin: %llu     end: %llu\n", 
+                get_good_canary ((uint64_t*) ((char*) stack->arr - sizeof (uint64_t))),
+                get_good_canary ((uint64_t*) ((char*) stack->arr + stack->capacity * stack->size_el))
+            );
+        else 
+            fprintf (
+                f_out, 
+                "   Expected data canary is not avaliable"
+            );
+#endif // CANARY PROTECTION
+
+#ifdef HASH_PROTECTION
+        fprintf (
+            f_out, 
+            "    Hash: %llu\n", 
+            calc_stack_hash (stack)
+        );
+#endif // CANARY PROTECTION
+
+#ifdef HASH_DATA_PROTECTION
+        if (is_stack_ok && stack->arr != nullptr)
+            fprintf (
+                f_out, 
+                "    Data hash: %llu\n", 
+                calc_stack_data_hash (stack)
+            );
+        else 
+            fprintf (
+                f_out, 
+                "   Expected data hash is not avaliable"
+            );
+#endif // CANARY PROTECTION
+    }
+    
+    if (match_dump_mode (mode, STACK_DATA_ADDR))
+        fprintf (f_out, "Pointer to data: %p\n", stack->arr);
+
+    if (match_dump_mode (mode, STACK_DATA) && is_stack_ok && stack->arr != NULL) {
         if (print) {
             RetErr t_err = OK;
-            
+
             fprintf (f_out, "Data from stack: \n");
             for (size_t i = 0; i < stack->size; i++) {
                 print ((char*) stack->arr + i * stack->size_el, f_out, &t_err);
@@ -301,7 +433,7 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
             fprintf (f_out, "Raw data from stack: \n");
 
             for (size_t i = 0; i < stack->size * stack->size_el; i++)
-                fprintf (f_out, "%X ", ((char *) stack->arr)[i] & 0xff);
+                fprintf (f_out, "%X ", ((char*) stack->arr)[i] & 0xff);
                 
             fputc ('\n', f_out);
         }
@@ -352,8 +484,8 @@ bool is_valid_stack (const Stack *stack) {
 #ifdef CANARY_PROTECTION
     if ( 
         // all are good or all are zero
-        (stack->begin_canary != get_good_canary (&stack->begin_canary) ||
-        stack->end_canary != get_good_canary (&stack->end_canary))
+        (!check_canary (&stack->begin_canary) ||
+        !check_canary (&stack->end_canary))
         &&
         (stack->size_el || 
         stack->begin_canary || stack->end_canary)
@@ -361,10 +493,20 @@ bool is_valid_stack (const Stack *stack) {
         return 0;
 #endif // CANARY PROTECTION
 
+#ifdef CANARY_DATA_PROTECTION
+    if (
+        stack->arr 
+        &&
+        (!check_canary ((uint64_t*) ((char*) stack->arr - sizeof (uint64_t))) ||
+        !check_canary ((uint64_t*) ((char*) stack->arr + stack->capacity * stack->size_el)))
+    )
+        return 0;
+#endif // CANARY_DATA_PROTECTION
+
 #ifdef HASH_PROTECTION
     if (
         // all are good or all are zero
-        stack->hash != calculate_stack_hash (stack) 
+        stack->hash != calc_stack_hash (stack) 
         &&
         (stack->size_el || stack->hash)
     )
@@ -374,7 +516,7 @@ bool is_valid_stack (const Stack *stack) {
 #ifdef HASH_DATA_PROTECTION
     if (
         // all are good or all are zero
-        stack->data_hash != calculate_stack_data_hash (stack) 
+        stack->data_hash != calc_stack_data_hash (stack) 
         &&
         (stack->size_el || stack->data_hash)
     )
