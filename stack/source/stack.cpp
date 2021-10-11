@@ -1,10 +1,17 @@
 #include "config.h"
 
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
+
 #include "stack.h"
 
 // canary protection utils
 
 #ifdef CANARY_PROTECTION
+
+FILE *log_file = nullptr;
 
 const uint64_t GOOD_CANARY = ((uint64_t) 1000 - 7) * 300/*$*/ * 1488 * 1337 * 666 * 228 * 107;
 
@@ -24,7 +31,7 @@ bool check_canary (const uint64_t *ptr) {
 
 // to avoid misusing bad functions
 
-void *realloc_ (void *ptr, const size_t len, const size_t size) {
+void *realloc_ (void *ptr, size_t len, size_t size) {
     return realloc (ptr, len * size);
 }
 
@@ -53,6 +60,19 @@ DumpMode add_modes (size_t num, ...) {
 DumpMode match_dump_mode(DumpMode mode, DumpMode match) {
     return (DumpMode) ((int) (mode) & (int) (match));
 }
+
+void set_log_file (const char *name, const char *mode, RetErr *err) {
+    fclose (log_file);
+    log_file = fopen (name, mode);
+    if (ferror (log_file))
+        add_err (err, ERR_OPEN_FILE);
+}
+
+void close_log_file () {
+    fclose (log_file);
+    log_file = nullptr;
+}
+
 
 void print_stack_int (const void *elem, FILE *f_out, RetErr *err) {
     if (check_null ((void*) (elem && f_out), err))
@@ -94,6 +114,9 @@ uint64_t calc_stack_data_hash (const Stack *stack) {
 void stack_ctor (Stack *stack, size_t capacity, size_t size_el, RetErr *err) {
     if (!is_empty_stack (stack, err))
         return;
+
+    if (!log_file)
+        log_file = fopen ("stack_logs.txt", "a");
         
 #ifdef CANARY_PROTECTION
     set_good_canary (&stack->begin_canary);
@@ -277,7 +300,7 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
                     RetErr *err) {
     // TODO should i split it into smaller functions?
     // TODO printf line, name, function and so on..
-    if (check_null ((void*) (f_out && print), err)) {
+    if (check_null (f_out, err)) {
         return;
     }
     if (ferror (f_out)) {
@@ -296,7 +319,9 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
         add_err (err, NULL_PTR);
     }
 
-    bool is_stack_ok = check_stack (stack, err);
+    fprintf ( f_out, "Address of stack: %p\n", stack);
+
+    bool is_stack_ok = check_stack (stack, err, 0);
     
     if (!is_stack_ok)
         // TODO add message why there is an error
@@ -335,34 +360,20 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
                 *(uint64_t*) ((char*) stack->arr + stack->capacity * stack->size_el)
             );
         else 
-            fprintf (
-                f_out, 
-                "   Data canary is not avaliable"
-            );
+            fprintf (f_out,  "   Data canary is not avaliable");
 #endif // CANARY PROTECTION
 
 #ifdef HASH_PROTECTION
-        fprintf (
-            f_out, 
-            "    Hash: %llu\n", 
-            stack->hash
-        );
+        fprintf (f_out, "    Hash: %llu\n", stack->hash);
 #endif // CANARY PROTECTION
 
 #ifdef HASH_DATA_PROTECTION
-        fprintf (
-            f_out, 
-            "    Data hash: %llu\n", 
-            stack->data_hash
-        );
+        fprintf (f_out, "    Data hash: %llu\n", stack->data_hash);
 #endif // CANARY PROTECTION
     }
 
     if (match_dump_mode (mode, STACK_EXPECTED)) {
-        fprintf (
-            f_out,
-            "Expected values:\n"
-        );
+        fprintf (f_out, "Expected values:\n");
         
 #ifdef CANARY_PROTECTION
         fprintf (
@@ -379,7 +390,8 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
                 f_out, 
                 "    Data canary: begin: %llu     end: %llu\n", 
                 get_good_canary ((uint64_t*) ((char*) stack->arr - sizeof (uint64_t))),
-                get_good_canary ((uint64_t*) ((char*) stack->arr + stack->capacity * stack->size_el))
+                get_good_canary ((uint64_t*) ((char*) stack->arr + 
+                                                stack->capacity * stack->size_el))
             );
         else 
             fprintf (
@@ -389,20 +401,12 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
 #endif // CANARY PROTECTION
 
 #ifdef HASH_PROTECTION
-        fprintf (
-            f_out, 
-            "    Hash: %llu\n", 
-            calc_stack_hash (stack)
-        );
+        fprintf (f_out, "    Hash: %llu\n", calc_stack_hash (stack));
 #endif // CANARY PROTECTION
 
 #ifdef HASH_DATA_PROTECTION
         if (is_stack_ok && stack->arr != nullptr)
-            fprintf (
-                f_out, 
-                "    Data hash: %llu\n", 
-                calc_stack_data_hash (stack)
-            );
+            fprintf (f_out, "    Data hash: %llu\n", calc_stack_data_hash (stack));
         else 
             fprintf (
                 f_out, 
@@ -415,7 +419,10 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
         fprintf (f_out, "Pointer to data: %p\n", stack->arr);
 
     if (match_dump_mode (mode, STACK_DATA) && is_stack_ok && stack->arr != NULL) {
-        if (print) {
+        if (!stack->size) {
+            fprintf (f_out, "No data in stack");
+        }
+        else if (print) {
             RetErr t_err = OK;
 
             fprintf (f_out, "Data from stack: \n");
@@ -449,13 +456,15 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
 }
 
 // stack tests
-bool check_stack (const Stack *stack, RetErr *err = nullptr) {
+bool check_stack (const Stack *stack, RetErr *err, bool dump) {
     if (!stack) {
         add_err (err, NULL_PTR);
         return 0;
     }
     if (!is_valid_stack (stack)) {
         add_err (err, INVALID_STACK);
+        if (dump)
+            stack_dump (stack, log_file, MAX_DUMP, nullptr, err);
         return 0;
     }
 

@@ -1,12 +1,8 @@
 #ifndef MY_STACK_H
 #define MY_STACK_H
 
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
 #include <inttypes.h>
-#include <stdarg.h>
 
 #include "config.h"
 
@@ -48,6 +44,7 @@ enum RetErr {
     NULL_PTR = 1 << 4,
     INVALID_ARG = 1 << 5, 
     ERR_WRITING_FILE = 1 << 6,
+    ERR_OPEN_FILE = 1 << 7
 };
 
 enum DumpMode {
@@ -63,6 +60,10 @@ const DumpMode MAX_DUMP = (DumpMode) ((1 << 6) - 1);
 DumpMode add_modes (int num, ...);
 
 DumpMode match_dump_mode(DumpMode mode, DumpMode match);
+
+void set_log_file (const char *name, const char *mode = "a", RetErr *err = nullptr);
+
+void close_log_file ();
 
 void *realloc_ (void *ptr, const size_t len, const size_t size);
 
@@ -97,9 +98,9 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
                     RetErr *err = nullptr);
 
 // stack tests
-bool check_stack (const Stack *stack, RetErr *err);
+bool check_stack (const Stack *stack, RetErr *err = nullptr, bool dump = 1);
 
-bool check_null (const void *ptr, RetErr *err);
+bool check_null (const void *ptr, RetErr *err = nullptr);
 
 bool is_valid_stack (const Stack *stack);
 

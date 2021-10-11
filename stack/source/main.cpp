@@ -20,7 +20,6 @@ int main () {
             printf ("ERR: %d %d\n", i, err);
             break;
         }
-        //printf ("%d %d\n", i, err);
     }
     
     printf ("%d %d %d %d\n\n", stack_int.arr, stack_int.capacity, stack_int.size, stack_int.size_el);
@@ -39,9 +38,6 @@ int main () {
             printf ("%d : %d -> %d\n", *x, old, stack_int.capacity);
             old = stack_int.capacity;
         }
-
-        //if (!err) 
-            //printf ("%d\n", *x);
     }
 
     stack_dump (&stack_int, stdout, MAX_DUMP, print_stack_int);
@@ -56,6 +52,7 @@ int main () {
 
     printf ("DONE");
 
+    close_log_file ();
 
     return 0;
 }
