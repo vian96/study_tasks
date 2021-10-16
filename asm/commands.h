@@ -4,18 +4,18 @@
 #include <string.h>
 #include <ctype.h>
 
-const int NUM_CMD = 4;
+const int NUM_CMD = 5;
 
 enum AsmCmd {
-    CMD_PUSH,
-    CMD_IN,
-    CMD_MUL,
-    CMD_OUT
+    CMD_PUSH = 1,
+    CMD_IN = 2,
+    CMD_MUL = 3,
+    CMD_OUT = 4
 };
 
-const char cmd_names[NUM_CMD][10] = {"push", "in", "mul", "out"};
+const char cmd_names[NUM_CMD][10] = {"NOT_A_CMD", "push", "in", "mul", "out"};
 
-const int cmd_args[NUM_CMD] = {1, 0, 0, 0};
+const int cmd_args[NUM_CMD] = {-1, 1, 0, 0, 0};
 
 bool is_equal_words (const char *a, const char *b) {
     while (*a == *b && !isblank(*a) && !isblank(*b) && *a && *b) {
