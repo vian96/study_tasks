@@ -18,9 +18,8 @@ void onegin () {
     if (!f_in)
         return;
 
-    int num_lines = 0;
-    StringRef *strings = read_text_file (f_in, &num_lines);
-    char *orig = strings->begin;
+    FileText text = read_text_file (f_in);
+    char *orig = text.strings->begin;
     
     fclose (f_in);  
 
@@ -34,8 +33,8 @@ void onegin () {
            f_out
     );
     
-    qsort (strings, num_lines, sizeof (StringRef), cmp_first_alnum_SR);
-    fprint_string_ref (strings, num_lines, f_out, 1);
+    qsort (text.strings, text.count, sizeof (StringRef), cmp_first_alnum_SR);
+    fprint_string_ref (text.strings, text.count, f_out, 1);
 
     fputs ("\n\n/////////////////////////////////////////////////////\n"
            "Sorted by last symbols\n"
@@ -43,8 +42,8 @@ void onegin () {
            f_out
     );
     
-    qsort (strings, num_lines, sizeof (StringRef), cmp_rhyme_SR);
-    fprint_string_ref (strings, num_lines, f_out, 1);
+    qsort (text.strings, text.count, sizeof (StringRef), cmp_rhyme_SR);
+    fprint_string_ref (text.strings, text.count, f_out, 1);
 
     fputs ("\n\n/////////////////////////////////////////////////////\n"
            "Original text\n"
@@ -52,10 +51,14 @@ void onegin () {
            f_out
     );
     
-    fputs (orig, f_out);
+    for (int i = 0; i < text.count; i++) {
+        fputs (text.strings[i].begin, f_out);
+        fputc ('\n', f_out);
+    }
 
     fclose (f_out);
 
-    free (orig);
-    free (strings);
+    free_file_text (&text, orig);
+
+    printf ("DONE!");
 }

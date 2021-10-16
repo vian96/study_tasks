@@ -14,37 +14,46 @@ FILE *fopen_err (const char *name, const char *mode) {
     return file;
 }
 
-StringRef *read_text_file (FILE *file_in, int *num_lines) {
+FileText read_text_file (FILE *file_in){
     assert (file_in);
     assert (!ferror (file_in));
-    assert (num_lines);
 
-    *num_lines = 0;
+    FileText text = {};
+    text.count = 0;
     
     int cnt_sym = 0;
     char *symbols = read_symbols_file (file_in, &cnt_sym);
 
     // counting all lines from file
-    *num_lines = 1;
+    text.count = 1;
 
     for (int i = 0; i < cnt_sym; i++) 
         if (symbols[i] == '\n') 
-            (*num_lines)++;
+            text.count++;
 
-    StringRef *strings = (StringRef *) calloc (*num_lines, sizeof (StringRef));
-    strings->begin = symbols;
+    text.strings = (StringRef *) calloc (text.count, sizeof (StringRef));
+    text.strings->begin = symbols;
     int line = 0;
     
     for (int i = 0; i < cnt_sym; i++) 
         if (symbols[i] == '\n') {
-            strings[line].len = (int) (symbols + i - strings[line].begin + 1);
+            text.strings[line].len = (int) (symbols + i - text.strings[line].begin);
             line++;
-            strings[line].begin = symbols + i + 1;
+            text.strings[line].begin = symbols + i + 1;
+            symbols[i] = '\0';
         }
 
-    strings[line].len = (int) (symbols + cnt_sym - strings[line].begin + 1);
+    text.strings[line].len = (int) (symbols + cnt_sym - text.strings[line].begin);
 
-    return strings;
+    return text;
+}
+
+void free_file_text (FileText *text, char *orig) {
+    if (!orig)
+        free (text->strings[0].begin);
+    else
+        free (orig);
+    free (text->strings);
 }
 
 char *read_symbols_file (FILE *file_in, int *len) {
@@ -90,6 +99,7 @@ void fprint_string_ref (StringRef *strings, int len,
             assert (strings[i].begin);
 
             fwrite (strings[i].begin, sizeof (char), strings[i].len, file_out);
+            fputc ('\n', file_out);
         }
 }
 

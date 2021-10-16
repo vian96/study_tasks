@@ -11,6 +11,11 @@ struct StringRef {
     int len;
 };
 
+struct FileText {
+    StringRef *strings;
+    int count;
+};
+
 // opens file and returns it on success
 // if failed it prints error and return NULL
 FILE *fopen_err (const char *name, const char *mode);
@@ -18,7 +23,12 @@ FILE *fopen_err (const char *name, const char *mode);
 // reads strings from file file_in to array of char*
 // number of read lines is put into *num_of_lines
 // returns array of StringRef pointing to lines of text
-StringRef *read_text_file (FILE *file_in, int *num_lines);
+FileText read_text_file (FILE *file_in);
+
+// clears FileText and frees memory
+// if order of strings is changed, pass orig to 
+// begin of the first string from original
+void free_file_text (FileText *text, char *orig = nullptr);
 
 // reads symbols from file 
 // number of read symbols is put into len
