@@ -1,10 +1,10 @@
 #ifndef MY_STACK_H
 #define MY_STACK_H
 
+#include "config.h"
+
 #include <stdio.h>
 #include <inttypes.h>
-
-#include "config.h"
 
 const size_t MIN_STACK_SIZE = 64;
 
@@ -34,17 +34,18 @@ struct Stack {
 #endif // HASH_PROTECTION
 };
 
+// TODO print errors in beatiful way
 enum RetErr {
-    // TODO change to STACK_OK
-    OK = 0, 
-    OVERFLOW = 1, 
-    UNDERFLOW = 1 << 1,
-    NO_MEMORY = 1 << 2, 
-    INVALID_STACK = 1 << 3, 
-    NULL_PTR = 1 << 4,
-    INVALID_ARG = 1 << 5, 
-    ERR_WRITING_FILE = 1 << 6,
-    ERR_OPEN_FILE = 1 << 7
+    // TODO add STACK_
+    STACK_OK = 0, 
+    STACK_OVERFLOW = 1, 
+    STACK_UNDERFLOW = 1 << 1,
+    STACK_NO_MEMORY = 1 << 2, 
+    STACK_INVALID_STACK = 1 << 3, 
+    STACK_NULL_PTR = 1 << 4,
+    STACK_INVALID_ARG = 1 << 5, 
+    STACK_ERR_WRITING_FILE = 1 << 6,
+    STACK_ERR_OPEN_FILE = 1 << 7
 };
 
 enum DumpMode {
@@ -85,12 +86,9 @@ void stack_dtor (Stack *stack, RetErr *err = nullptr);
 // element access functions
 void stack_push (Stack *stack, const void *value, RetErr *err = nullptr);
 
-void *stack_pop (Stack *stack, RetErr *err = nullptr);
+const void *stack_pop (Stack *stack, RetErr *err = nullptr);
 
-void *stack_top (const Stack *stack, RetErr *err = nullptr);
-
-// change of stack
-void stack_shrink_to_fit (Stack *stack, RetErr *err = nullptr);
+const void *stack_top (const Stack *stack, RetErr *err = nullptr);
 
 // debug functions
 void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode, 

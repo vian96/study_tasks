@@ -1,14 +1,11 @@
-#include <stdio.h>
-
 #include "config.h"
-
 #include "stack.h"
 
-#define deb printf ("DEB %d\n", __LINE__);
+#include <stdio.h>
 
 int main () {
     Stack stack_int = {};
-    RetErr err = OK;
+    RetErr err = STACK_OK;
 
     stack_ctor (&stack_int, 10, sizeof (int));
     stack_dump (&stack_int, stdout, MAX_DUMP, print_stack_int);
@@ -24,12 +21,12 @@ int main () {
     
     printf ("%d %d %d %d\n\n", stack_int.arr, stack_int.capacity, stack_int.size, stack_int.size_el);
 
-    err = OK; 
+    err = STACK_OK; 
     size_t old = stack_int.capacity;
 
     stack_dump (&stack_int, stdout, MAX_DUMP, print_stack_int);
 
-    while (err == OK) {
+    while (err == STACK_OK) {
         int *x = (int*) stack_pop (&stack_int, &err);
 
         //x && printf ("x: %d\n", *x);

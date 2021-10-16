@@ -1,11 +1,10 @@
 #include "config.h"
+#include "stack.h"
 
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-
-#include "stack.h"
 
 // canary protection utils
 
@@ -65,7 +64,7 @@ void set_log_file (const char *name, const char *mode, RetErr *err) {
     fclose (log_file);
     log_file = fopen (name, mode);
     if (ferror (log_file))
-        add_err (err, ERR_OPEN_FILE);
+        add_err (err, STACK_ERR_OPEN_FILE);
 }
 
 void close_log_file () {
@@ -79,7 +78,7 @@ void print_stack_int (const void *elem, FILE *f_out, RetErr *err) {
         return;
 
     if (!elem || !f_out) {
-        add_err (err, NULL_PTR);
+        add_err (err, STACK_NULL_PTR);
         return;
     }
 
@@ -147,7 +146,7 @@ void stack_ctor (Stack *stack, size_t capacity, size_t size_el, RetErr *err) {
         stack->capacity = capacity;
 
         if (!stack->arr)
-            add_err (err, NO_MEMORY);
+            add_err (err, STACK_NO_MEMORY);
     }
     
 #ifdef HASH_PROTECTION
@@ -208,7 +207,7 @@ void stack_push (Stack *stack, const void *value, RetErr *err) {
 #endif // CANARY_DATA_PROTECTION
         
         if (!temp) { 
-            add_err (err, NO_MEMORY);
+            add_err (err, STACK_NO_MEMORY);
             return;
         }
 
@@ -241,13 +240,13 @@ void stack_push (Stack *stack, const void *value, RetErr *err) {
 #endif // HASH_PROTECTION
 }
 
-void *stack_pop (Stack *stack, RetErr *err) {
+const void *stack_pop (Stack *stack, RetErr *err) {
     if (!check_stack (stack, err))
         return nullptr;
 
     if (!stack->size) {
         if (err)
-            *err = UNDERFLOW;
+            *err = STACK_UNDERFLOW;
 
         return nullptr;
     }
@@ -280,12 +279,12 @@ void *stack_pop (Stack *stack, RetErr *err) {
     return (char*) stack->arr + (stack->size) * stack->size_el;
 }
 
-void *stack_top (const Stack *stack, RetErr *err) {
+const void *stack_top (const Stack *stack, RetErr *err) {
     if (!check_stack (stack, err))
         return nullptr;
 
     if (!stack->size) {
-        add_err (err, UNDERFLOW);
+        add_err (err, STACK_UNDERFLOW);
 
         return nullptr;
     }
@@ -304,7 +303,7 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
         return;
     }
     if (ferror (f_out)) {
-        add_err (err, INVALID_ARG);
+        add_err (err, STACK_INVALID_ARG);
         return;
     }
     
@@ -316,7 +315,7 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
             "ERROR: stack address is NULL!!!!!\n"
             "--------------------------------------\n"
         );
-        add_err (err, NULL_PTR);
+        add_err (err, STACK_NULL_PTR);
     }
 
     fprintf ( f_out, "Address of stack: %p\n", stack);
@@ -423,7 +422,7 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
             fprintf (f_out, "No data in stack");
         }
         else if (print) {
-            RetErr t_err = OK;
+            RetErr t_err = STACK_OK;
 
             fprintf (f_out, "Data from stack: \n");
             for (size_t i = 0; i < stack->size; i++) {
@@ -452,17 +451,17 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
     );
 
     if (ferror (f_out))
-        add_err (err, ERR_WRITING_FILE);
+        add_err (err, STACK_ERR_WRITING_FILE);
 }
 
 // stack tests
 bool check_stack (const Stack *stack, RetErr *err, bool dump) {
     if (!stack) {
-        add_err (err, NULL_PTR);
+        add_err (err, STACK_NULL_PTR);
         return 0;
     }
     if (!is_valid_stack (stack)) {
-        add_err (err, INVALID_STACK);
+        add_err (err, STACK_INVALID_STACK);
         if (dump)
             stack_dump (stack, log_file, MAX_DUMP, nullptr, err);
         return 0;
@@ -473,7 +472,7 @@ bool check_stack (const Stack *stack, RetErr *err, bool dump) {
 
 bool check_null (const void *ptr, RetErr *err) {
     if (!ptr) {
-        add_err (err, NULL_PTR);
+        add_err (err, STACK_NULL_PTR);
         return 1;
     }
 
