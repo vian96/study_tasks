@@ -20,6 +20,12 @@ int get_arg (const char **str);
 
 bool is_empty_string (const char *str);
 
+void skip_blank (const char **str);
+
+void skip_not_blank (const char **str);
+
+void skip_alnum (const char **str);
+
 int main (int argc, char *argv[]) {
     if (argc != 2) {
         printf (
@@ -145,8 +151,7 @@ int *parse_commands (FileText *code, size_t *out_size) {
         int cnt = 0;
         
         // skips name of func
-        while (*str && !isblank(*str))
-            str++;
+        skip_not_blank (&str);
         
         while (cnt++ < cmd_args[cmd])
             out[f_pos++] = get_arg (&str);
@@ -161,16 +166,12 @@ int count_num_args (const char *cmd) {
     int count = 0;
 
     while (*cmd) {
-        // moving to arg
-        while (*cmd && isblank(*cmd))
-            cmd++;
+        skip_blank (&cmd); // moving to arg
 
         if (*cmd)
             count++;
-
-        // skiping arg
-        while (*cmd && isalnum (*cmd)) 
-            cmd++;
+        
+        skip_not_blank (&cmd); // skiping arg
     }
 
     return count;
@@ -180,13 +181,11 @@ int get_arg (const char **str) {
     assert (str);
     assert (*str);
 
-    while (**str && isblank(**str))
-        (*str)++;
+    skip_blank (str);
 
     int res = atoi (*str);
 
-    while (*str && isalnum (**str)) 
-        (*str)++;
+    skip_alnum (str);
 
     return res;
 }
@@ -194,10 +193,34 @@ int get_arg (const char **str) {
 bool is_empty_string (const char *str) {
     assert (str);
 
-    while (*str && isblank (*str))
-        str++;
+    skip_blank (&str);
     
     return !*str;
 }
+
+void skip_blank (const char **str) {
+    assert (str);
+    assert (*str);
+
+    while (**str && isblank(**str))
+        (*str)++;
+}
+
+void skip_not_blank (const char **str) {
+    assert (str);
+    assert (*str);
+
+    while (**str && !isblank(**str))
+        (*str)++;
+}
+
+void skip_alnum (const char **str) {
+    assert (str);
+    assert (*str);
+
+    while (**str && isalnum(**str))
+        (*str)++;
+}
+
 
 
