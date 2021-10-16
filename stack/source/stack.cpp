@@ -8,9 +8,9 @@
 
 // canary protection utils
 
-#ifdef CANARY_PROTECTION
-
 FILE *log_file = nullptr;
+
+#if defined (CANARY_PROTECTION) || defined (CANARY_DATA_PROTECTION)
 
 const uint64_t GOOD_CANARY = ((uint64_t) 1000 - 7) * 300/*$*/ * 1488 * 1337 * 666 * 228 * 107;
 
@@ -26,7 +26,7 @@ bool check_canary (const uint64_t *ptr) {
     return *ptr == get_good_canary (ptr);
 }
 
-#endif // CANARY PROTECTION
+#endif // CANARY PROTECTION || CANARY_DATA_PROTECTION
 
 // to avoid misusing bad functions
 
@@ -34,8 +34,8 @@ void *realloc_ (void *ptr, size_t len, size_t size) {
     return realloc (ptr, len * size);
 }
 
-#define malloc() ((void) 0)
-#define realloc() ((void) 0)
+#define malloc (YoU_ArE__UsInG_WrONG_funCTion___)
+#define realloc (YoU_ArE__UsInG_WrONG_funCTion___)
 
 DumpMode add_modes (size_t num, ...) {
     assert (num > 0);
@@ -89,6 +89,8 @@ void add_err (RetErr *err, RetErr value) {
     err && (*err = (RetErr)((int)(*err) | (int)value));
 }
 
+#if defined (HASH_PROTECTION) || defined (HASH_DATA_PROTECTION)
+
 uint64_t calc_hash (const void *ptr, size_t size) {
 	uint64_t hash = 0;
 
@@ -107,6 +109,8 @@ uint64_t calc_stack_hash (const Stack *stack) {
 uint64_t calc_stack_data_hash (const Stack *stack) {
     return calc_hash (stack->arr, stack->capacity * stack->size_el);
 }
+
+#endif // HASH_PROTECTION || HASH_DATA_PROTECTION
 
 // constructor and destructor
 
@@ -200,7 +204,7 @@ void stack_push (Stack *stack, const void *value, RetErr *err) {
         char *temp = nullptr;
 
 #ifndef CANARY_DATA_PROTECTION
-        temp = realloc_ (stack->arr, stack->capacity * 2, stack->size_el);
+        temp = (char *) realloc_ (stack->arr, stack->capacity * 2, stack->size_el);
 #else // not CANARY_DATA_PROTECTION
         temp = (char*) realloc_ ((char*) stack->arr - sizeof (uint64_t), 
                                 stack->capacity * 2 * stack->size_el + 2 * sizeof (uint64_t), 1);
@@ -419,7 +423,7 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
 
     if (match_dump_mode (mode, STACK_DATA) && is_stack_ok && stack->arr != NULL) {
         if (!stack->size) {
-            fprintf (f_out, "No data in stack");
+            fprintf (f_out, "No data in stack\n");
         }
         else if (print) {
             RetErr t_err = STACK_OK;
