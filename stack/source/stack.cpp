@@ -61,7 +61,9 @@ DumpMode match_dump_mode(DumpMode mode, DumpMode match) {
 }
 
 void set_log_file (const char *name, const char *mode, RetErr *err) {
-    fclose (log_file);
+    if (log_file)
+        fclose (log_file);
+    
     log_file = fopen (name, mode);
     if (ferror (log_file))
         add_err (err, STACK_ERR_OPEN_FILE);
@@ -69,6 +71,7 @@ void set_log_file (const char *name, const char *mode, RetErr *err) {
 
 void close_log_file () {
     fclose (log_file);
+
     log_file = nullptr;
 }
 
@@ -117,9 +120,6 @@ uint64_t calc_stack_data_hash (const Stack *stack) {
 void stack_ctor (Stack *stack, size_t capacity, size_t size_el, RetErr *err) {
     if (!is_empty_stack (stack, err))
         return;
-
-    if (!log_file)
-        log_file = fopen ("stack_logs.txt", "a");
         
 #ifdef CANARY_PROTECTION
     set_good_canary (&stack->begin_canary);
@@ -197,8 +197,20 @@ void stack_push (Stack *stack, const void *value, RetErr *err) {
     if (check_null (value, err))
         return;
 
-    if (!stack->capacity)
+    if (!stack->size_el) {
+        add_err (err, STACK_INVALID_STACK);
+        return;
+    }
+
+    if (!stack->capacity) {
         stack->capacity = MIN_STACK_SIZE;
+
+#ifndef CANARY_DATA_PROTECTION
+        stack->arr = (char *) calloc (stack->capacity, stack->size_el);
+#else // not CANARY_DATA_PROTECTION
+        stack->arr = (char*) calloc (stack->capacity * stack->size_el + 2 * sizeof (uint64_t), 1);
+#endif // CANARY_DATA_PROTECTION
+    }
 
     if (stack->size == stack->capacity) {
         char *temp = nullptr;
@@ -466,8 +478,13 @@ bool check_stack (const Stack *stack, RetErr *err, bool dump) {
     }
     if (!is_valid_stack (stack)) {
         add_err (err, STACK_INVALID_STACK);
-        if (dump)
+
+        if (dump) {
+            if (!log_file)
+                log_file = fopen ("stack_logs.txt", "a");
+
             stack_dump (stack, log_file, MAX_DUMP, nullptr, err);
+        }
         return 0;
     }
 
