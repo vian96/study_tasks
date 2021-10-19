@@ -4,18 +4,27 @@
 #include <string.h>
 #include <ctype.h>
 
-const int NUM_CMD = 5;
+const int ASM_SIGN = 'CABO';
 
-enum AsmCmd {
-    CMD_PUSH = 1,
-    CMD_IN = 2,
-    CMD_MUL = 3,
-    CMD_OUT = 4
+const  char ASM_VER[8] = "0.0.1";
+
+struct FileData {
+    int signature;
+    long long version;
 };
 
-const char cmd_names[NUM_CMD][10] = {"NOT_A_CMD", "push", "in", "mul", "out"};
+enum AsmCmd {
+    CMD_PUSH    = 1,
+    CMD_IN      = 2,
+    CMD_MUL     = 3,
+    CMD_OUT     = 4,
+    CMD_ADD     = 5,
+    NUM_CMD     // auto completes to the next number
+};
 
-const int cmd_args[NUM_CMD] = {-1, 1, 0, 0, 0};
+const char cmd_names[NUM_CMD][10] = {"NOT_A_CMD", "push", "in", "mul", "out", "add"};
+
+const int cmd_args[NUM_CMD] = {-1, 1, 0, 0, 0, 0};
 
 bool is_equal_words (const char *a, const char *b) {
     while (*a == *b && !isblank(*a) && !isblank(*b) && *a && *b) {
