@@ -62,7 +62,7 @@ DumpMode add_modes (int num, ...);
 
 DumpMode match_dump_mode(DumpMode mode, DumpMode match);
 
-void set_log_file (const char *name, const char *mode = "a", RetErr *err = nullptr);
+void set_log_file (const char *name = "stack_logs.txt", const char *mode = "a", RetErr *err = nullptr);
 
 void close_log_file ();
 

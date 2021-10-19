@@ -315,14 +315,19 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
                     RetErr *err) {
     // TODO should i split it into smaller functions?
     // TODO printf line, name, function and so on..
-    if (check_null (f_out, err)) {
-        return;
-    }
     if (ferror (f_out)) {
         add_err (err, STACK_INVALID_ARG);
         return;
     }
+
+    if (!f_out)
+        f_out = log_file;
     
+    if (!f_out) {
+        set_log_file ();
+        f_out = log_file;
+    }
+
     fprintf (f_out, "\n-------------STACK DUMP---------------\n");
 
     if (!stack) {
@@ -479,12 +484,9 @@ bool check_stack (const Stack *stack, RetErr *err, bool dump) {
     if (!is_valid_stack (stack)) {
         add_err (err, STACK_INVALID_STACK);
 
-        if (dump) {
-            if (!log_file)
-                log_file = fopen ("stack_logs.txt", "a");
-
-            stack_dump (stack, log_file, MAX_DUMP, nullptr, err);
-        }
+        if (dump) 
+            stack_dump (stack, nullptr, MAX_DUMP, nullptr, err);
+            
         return 0;
     }
 
@@ -514,10 +516,10 @@ bool is_valid_stack (const Stack *stack) {
     if ( 
         // all are good or all are zero
         (!check_canary (&stack->begin_canary) ||
-        !check_canary (&stack->end_canary))
+         !check_canary (&stack->end_canary))
         &&
         (stack->size_el || 
-        stack->begin_canary || stack->end_canary)
+         stack->begin_canary || stack->end_canary)
     )
         return 0;
 #endif // CANARY PROTECTION
@@ -527,7 +529,7 @@ bool is_valid_stack (const Stack *stack) {
         stack->arr 
         &&
         (!check_canary ((uint64_t*) ((char*) stack->arr - sizeof (uint64_t))) ||
-        !check_canary ((uint64_t*) ((char*) stack->arr + stack->capacity * stack->size_el)))
+         !check_canary ((uint64_t*) ((char*) stack->arr + stack->capacity * stack->size_el)))
     )
         return 0;
 #endif // CANARY_DATA_PROTECTION

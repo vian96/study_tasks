@@ -8,7 +8,7 @@ int main () {
     RetErr err = STACK_OK;
 
     stack_ctor (&stack_int, 10, sizeof (int));
-    stack_dump (&stack_int, stdout, MAX_DUMP, print_stack_int);
+    stack_dump (&stack_int, nullptr, MAX_DUMP, print_stack_int);
     
     for (int i = 7; i < 1240; i++){
         stack_push (&stack_int, &i, &err);
@@ -24,7 +24,7 @@ int main () {
     err = STACK_OK; 
     size_t old = stack_int.capacity;
 
-    stack_dump (&stack_int, stdout, MAX_DUMP, print_stack_int);
+    stack_dump (&stack_int, nullptr, MAX_DUMP, print_stack_int);
 
     while (err == STACK_OK) {
         int *x = (int*) stack_pop (&stack_int, &err);
@@ -37,17 +37,17 @@ int main () {
         }
     }
 
-    stack_dump (&stack_int, stdout, MAX_DUMP, print_stack_int);
+    stack_dump (&stack_int, nullptr, MAX_DUMP, print_stack_int);
   
     printf ("%d %d %d %d\n", stack_int.arr, stack_int.capacity, stack_int.size, stack_int.size_el);
 
     stack_dtor (&stack_int);
 
-    stack_dump (&stack_int, stdout, MAX_DUMP, print_stack_int);
+    stack_dump (&stack_int, nullptr, MAX_DUMP, print_stack_int);
  
     printf ("%d %d %d %d\n", stack_int.arr, stack_int.capacity, stack_int.size, stack_int.size_el);
 
-    printf ("DONE");
+    printf ("DONE\n");
 
     close_log_file ();
 
