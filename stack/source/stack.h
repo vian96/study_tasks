@@ -37,28 +37,29 @@ struct Stack {
 // TODO print errors in beatiful way
 enum RetErr {
     // TODO add STACK_
-    STACK_OK = 0, 
-    STACK_OVERFLOW = 1, 
-    STACK_UNDERFLOW = 1 << 1,
-    STACK_NO_MEMORY = 1 << 2, 
-    STACK_INVALID_STACK = 1 << 3, 
-    STACK_NULL_PTR = 1 << 4,
-    STACK_INVALID_ARG = 1 << 5, 
-    STACK_ERR_WRITING_FILE = 1 << 6,
-    STACK_ERR_OPEN_FILE = 1 << 7
+    STACK_OK                = 0, 
+    STACK_OVERFLOW          = 1, 
+    STACK_UNDERFLOW         = 1 << 1,
+    STACK_NO_MEMORY         = 1 << 2, 
+    STACK_INVALID_STACK     = 1 << 3, 
+    STACK_NULL_PTR          = 1 << 4,
+    STACK_INVALID_ARG       = 1 << 5, 
+    STACK_ERR_WRITING_FILE  = 1 << 6,
+    STACK_ERR_OPEN_FILE     = 1 << 7
 };
 
 enum DumpMode {
-    STACK_ADDR = 1 << 1,
-    STACK_MEMB = 1 << 2,
-    STACK_DATA_ADDR = 1 << 3,
-    STACK_DATA = 1 << 4,
-    STACK_EXPECTED = 1 << 5,
+    STACK_ADDR          = 1 << 1,
+    STACK_MEMB          = 1 << 2,
+    STACK_DATA_ADDR     = 1 << 3,
+    STACK_DATA          = 1 << 4,
+    STACK_EXPECTED      = 1 << 5,
+    STACK_FORCE_DATA    = 1 << 6
 };
 
 const DumpMode MAX_DUMP = (DumpMode) ((1 << 6) - 1);
 
-DumpMode add_modes (int num, ...);
+DumpMode add_modes (size_t num, ...);
 
 DumpMode match_dump_mode(DumpMode mode, DumpMode match);
 

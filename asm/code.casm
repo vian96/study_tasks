@@ -1,4 +1,12 @@
-push 4
-in
-mul
-out
+; program for calculating discriminant
+in ; b
+in ; b
+mul ; b^2
+push -4
+in ; a 
+in ; c
+mul ; ac
+mul ; -4ac
+add ; b^2 - 4ac
+out 
+

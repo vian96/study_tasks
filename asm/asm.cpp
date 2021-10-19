@@ -1,7 +1,6 @@
 #include "commands.h"
 
 #include "../onegin/file_utils.h"
-#include "../stack/source/stack.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,6 +8,8 @@
 #include <assert.h>
 #include <string.h>
 #include <ctype.h>
+
+// TODO change int to int32_t or somthing
 
 char *create_out_name (const char *in_name);
 
@@ -74,13 +75,27 @@ int main (int argc, char *argv[]) {
     size_t out_size = 0;
     int *out = parse_commands (&code, &out_size);
 
+    free_file_text (&code);
+
     for (int i = 0; i < out_size; i++)
         printf ("%d ", out[i]);
     
     printf("\n");
 
+    FILE *f_out = fopen_err (out_name, "wb");
+    if (!f_out)
+        return 0;
+
+    fwrite (&ASM_SIGN, sizeof (ASM_SIGN), 1, f_out);
+    fwrite (&ASM_VER, sizeof (ASM_VER), 1, f_out);
+
+    //fwrite (&file_data, sizeof (FileData), 1, f_out);
+
+    fwrite (out, sizeof (*out), out_size, f_out);
+
+    fclose (f_out);
+
     free (out);
-    free_file_text (&code);
     free (out_name);
 
     printf("\nDONE\n");

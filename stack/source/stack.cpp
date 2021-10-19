@@ -208,7 +208,13 @@ void stack_push (Stack *stack, const void *value, RetErr *err) {
 #ifndef CANARY_DATA_PROTECTION
         stack->arr = (char *) calloc (stack->capacity, stack->size_el);
 #else // not CANARY_DATA_PROTECTION
-        stack->arr = (char*) calloc (stack->capacity * stack->size_el + 2 * sizeof (uint64_t), 1);
+        char *temp = (char*) calloc (stack->capacity * stack->size_el + 2 * sizeof (uint64_t), 1);
+    
+        set_good_canary ((uint64_t*) temp);
+        temp += sizeof (uint64_t);
+        set_good_canary ((uint64_t*) (temp + stack->capacity * stack->size_el));
+    
+        stack->arr = temp;
 #endif // CANARY_DATA_PROTECTION
     }
 
@@ -337,6 +343,8 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
             "--------------------------------------\n"
         );
         add_err (err, STACK_NULL_PTR);
+
+        return;
     }
 
     fprintf ( f_out, "Address of stack: %p\n", stack);
@@ -349,6 +357,9 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
     else
         fprintf (f_out, "Stack status: OK\nStack is %sempty\n", 
                     is_empty_stack (stack) ? "" : "not ");
+
+    if (match_dump_mode (mode, STACK_FORCE_DATA))
+        is_stack_ok = 1;
 
     if (match_dump_mode (mode, STACK_ADDR))
         fprintf (f_out, "Address: %p\n", stack);
@@ -380,7 +391,7 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
                 *(uint64_t*) ((char*) stack->arr + stack->capacity * stack->size_el)
             );
         else 
-            fprintf (f_out,  "   Data canary is not avaliable");
+            fprintf (f_out,  "    Data canary is not avaliable\n");
 #endif // CANARY PROTECTION
 
 #ifdef HASH_PROTECTION
@@ -416,7 +427,7 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
         else 
             fprintf (
                 f_out, 
-                "   Expected data canary is not avaliable"
+                "    Expected data canary is not avaliable\n"
             );
 #endif // CANARY PROTECTION
 
@@ -430,7 +441,7 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
         else 
             fprintf (
                 f_out, 
-                "   Expected data hash is not avaliable"
+                "    Expected data hash is not avaliable\n"
             );
 #endif // CANARY PROTECTION
     }
@@ -473,6 +484,9 @@ void stack_dump (const Stack *stack, FILE *f_out, DumpMode mode,
 
     if (ferror (f_out))
         add_err (err, STACK_ERR_WRITING_FILE);
+
+    if (f_out == log_file)
+        fclose (f_out);
 }
 
 // stack tests
