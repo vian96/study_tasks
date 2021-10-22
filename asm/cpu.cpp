@@ -3,17 +3,23 @@
 #include "../onegin/file_utils.h"
 #include "../stack/source/stack.h"
 
-#define NDEBUG
+#include <stdio.h>
+
+#include <conio.h>
+
+//#define NDEBUG
 
 #ifndef NDEBUG
+
 #define deb(...) printf (__VA_ARGS__);
+#define wait //_getch();
+
 #else // debug
-#define deb(...) ;
+
+#define deb(...) 
+#define wait 
+
 #endif // not debug
-
-
-const int CMD_SIZE = sizeof (int);
-const int ARG_SIZE = sizeof (int);
 
 int get_arg (const char *bin);
 
@@ -42,19 +48,18 @@ int main (int argc, char *argv[]) {
     const char *in_name = argv[1];
 
     FILE *f_in = fopen_err (in_name, "rb");
-    int file_len = 0;
+    if (!f_in)
+        return 0;
 
+    int file_len = 0;
     char *bin = read_symbols_file (f_in, &file_len);
 
     fclose (f_in);
 
     int ip = 0;
 
-    // TODO remove %4 when change to variable length
-    if (sizeof (ASM_SIGN) + sizeof (ASM_VER) >= file_len || file_len % 4 != 0) {
-        printf (
-            "ERROR: file is corrupted, it is too small or has bad length\n"
-        );
+    if (sizeof (ASM_SIGN) + sizeof (ASM_VER) >= file_len) {
+        printf ("ERROR: file is corrupted, it is too small or has bad length\n");
         free (bin);
         
         return 0;
@@ -98,10 +103,11 @@ int main (int argc, char *argv[]) {
     while (ip < file_len) {
         deb ("while..\n");
 
-        switch (*(AsmCmd*) (bin + ip)) {
+        switch (*(bin + ip)) {
         case CMD_PUSH:
-            deb ("push..\n");
             ip += CMD_SIZE;
+            
+            deb ("push..\n");
             deb ("CMD: push ip: %d, arg: %d\n", ip, ARG);
             
             PUSH(ARG);
@@ -109,6 +115,7 @@ int main (int argc, char *argv[]) {
 
             ip += ARG_SIZE;
 
+            wait
             break;
         case CMD_IN:
             ip += CMD_SIZE;
@@ -116,6 +123,7 @@ int main (int argc, char *argv[]) {
             PUSH (input_int ());
             deb ("Pushed in..\n");
 
+            wait
             break;
         case CMD_MUL:
             ip += CMD_SIZE;
@@ -124,12 +132,14 @@ int main (int argc, char *argv[]) {
             PUSH (POP * POP);
             deb ("Pushed mul..\n");
             
+            wait
             break;
         case CMD_OUT:
             ip += CMD_SIZE;
 
             printf ("OUT: %d\n", POP);
             
+            wait
             break;
         case CMD_ADD:
             ip += CMD_SIZE;
@@ -138,13 +148,18 @@ int main (int argc, char *argv[]) {
             PUSH (POP + POP);
             deb ("Pushed add...\n");
 
+            wait
             break;
         default:
-            deb ("ERROR: unknown command, exiting cpu!\n");
+            deb ("ERROR: unknown command at pos %d with value %d, exiting cpu!\n", ip, bin[ip]);
             free (bin);
             return 0;
         }
     }
+
+#undef PUSH
+#undef POP
+#undef ARG
 
     printf ("DONE\n");
 

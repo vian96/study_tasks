@@ -1,4 +1,5 @@
 #include "commands.h"
+#include "string_utils.h"
 
 #include "../onegin/file_utils.h"
 
@@ -7,25 +8,20 @@
 #include <ctype.h>
 #include <assert.h>
 #include <string.h>
-#include <ctype.h>
 
 // TODO change int to int32_t or somthing
 
 char *create_out_name (const char *in_name);
 
-int *parse_commands (FileText *code, size_t *out_size);
+char *parse_commands (const FileText *code, size_t *out_size);
+
+size_t get_out_size (const FileText *code);
+
+size_t create_out_arr (const FileText *code, char *out);
 
 int count_num_args (const char *cmd);
 
-int get_arg (const char **str);
-
-bool is_empty_string (const char *str);
-
-void skip_blank (const char **str);
-
-void skip_not_blank (const char **str);
-
-void skip_alnum (const char **str);
+void set_arg (const char **str, char *out);
 
 int main (int argc, char *argv[]) {
     if (argc != 2) {
@@ -58,11 +54,14 @@ int main (int argc, char *argv[]) {
 
     fclose (f_in);
 
-    // remove comments
     for (size_t line = 0; line < code.count; line++) {
         char *str = code.strings[line].begin;
         
         while (*str) {
+            // converts string to upper case
+            *str = toupper (*str);
+
+            // removes comments
             if (*str == ';') {
                 *str = '\0';
                 break;
@@ -73,14 +72,14 @@ int main (int argc, char *argv[]) {
     }
 
     size_t out_size = 0;
-    int *out = parse_commands (&code, &out_size);
+    char *out = parse_commands (&code, &out_size);
 
     free_file_text (&code);
 
     for (int i = 0; i < out_size; i++)
         printf ("%d ", out[i]);
     
-    printf("\n");
+    printf ("\n");
 
     FILE *f_out = fopen_err (out_name, "wb");
     if (!f_out)
@@ -88,8 +87,6 @@ int main (int argc, char *argv[]) {
 
     fwrite (&ASM_SIGN, sizeof (ASM_SIGN), 1, f_out);
     fwrite (&ASM_VER, sizeof (ASM_VER), 1, f_out);
-
-    //fwrite (&file_data, sizeof (FileData), 1, f_out);
 
     fwrite (out, sizeof (*out), out_size, f_out);
 
@@ -109,20 +106,42 @@ char *create_out_name (const char *in_name) {
     strcpy (out_name, in_name);
     
     // *name*.boac - binary out assembler code
-    out_name[name_len] = '\0';
     out_name[name_len - 4] = 'b';
     out_name[name_len - 3] = 'o';
     out_name[name_len - 2] = 'a';
     out_name[name_len - 1] = 'c';
+    out_name[name_len    ] = '\0';
 
     return out_name;
 }
 
-int *parse_commands (FileText *code, size_t *out_size) {
+char *parse_commands (const FileText *code, size_t *out_size) {
     assert (code);
     assert (code->strings);
     assert (out_size);
    
+    *out_size = get_out_size (code);
+
+    if (!out_size)
+        return nullptr;
+
+    char *out = (char*) calloc (*out_size, 1);
+    
+    size_t f_pos = create_out_arr (code, out);
+    
+    assert (f_pos == *out_size);
+
+    // second run for jumps
+
+    return out;
+}
+
+size_t get_out_size (const FileText *code) {
+    assert (code);
+    assert (code->strings);
+
+    size_t out_size = 0;
+
     for (size_t line = 0; line < code->count; line++) {
         if (is_empty_string (code->strings[line].begin))
             continue;
@@ -134,7 +153,7 @@ int *parse_commands (FileText *code, size_t *out_size) {
                 "Syntax ERROR at line %d: wrong commmand\n%s\n", 
                 line + 1, code->strings[line].begin
             );
-            return nullptr;
+            return 0;
         }
 
         int args = count_num_args (code->strings[line].begin + strlen (cmd_names[cmd]));
@@ -144,13 +163,20 @@ int *parse_commands (FileText *code, size_t *out_size) {
                 "Syntax ERROR at line %d: expected %d argument after command %s, got %d\n%s\n", 
                 line + 1, cmd_args[cmd], cmd_names[cmd], args, code->strings[line].begin
             );
-            return nullptr;
+            return 0;
         }
 
-        *out_size += 1 + cmd_args[cmd];
+        out_size += CMD_SIZE + ARG_SIZE * cmd_args[cmd];
     }
 
-    int *out = (int*) calloc (*out_size, sizeof (int));
+    return out_size;
+}
+
+size_t create_out_arr (const FileText *code, char *out) {
+    assert (code);
+    assert (code->strings);
+    assert (out);
+
     size_t f_pos = 0;
 
     for (size_t line = 0; line < code->count; line++) {
@@ -161,18 +187,21 @@ int *parse_commands (FileText *code, size_t *out_size) {
         
         AsmCmd cmd = get_cmd (str);
 
-        out[f_pos++] = cmd;
-
-        int cnt = 0;
+        out[f_pos] = cmd;
+        f_pos += CMD_SIZE;
         
         // skips name of func
         skip_not_blank (&str);
+
+        int cnt = 0;
         
-        while (cnt++ < cmd_args[cmd])
-            out[f_pos++] = get_arg (&str);
+        while (cnt++ < cmd_args[cmd]) { 
+            set_arg (&str, out + f_pos);
+            f_pos += ARG_SIZE;
+        }
     }
 
-    return out;
+    return f_pos;
 }
 
 int count_num_args (const char *cmd) {
@@ -192,49 +221,20 @@ int count_num_args (const char *cmd) {
     return count;
 }
 
-int get_arg (const char **str) {
+void set_arg (const char **str, char *out) {
     assert (str);
     assert (*str);
+    assert (out);
 
     skip_blank (str);
 
     int res = atoi (*str);
+    char *bytes = (char*) &res;
+
+    for (int i = 0; i < sizeof (int); i++)
+        out[i] = bytes[i];
 
     skip_alnum (str);
-
-    return res;
-}
-
-bool is_empty_string (const char *str) {
-    assert (str);
-
-    skip_blank (&str);
-    
-    return !*str;
-}
-
-void skip_blank (const char **str) {
-    assert (str);
-    assert (*str);
-
-    while (**str && isblank(**str))
-        (*str)++;
-}
-
-void skip_not_blank (const char **str) {
-    assert (str);
-    assert (*str);
-
-    while (**str && !isblank(**str))
-        (*str)++;
-}
-
-void skip_alnum (const char **str) {
-    assert (str);
-    assert (*str);
-
-    while (**str && isalnum(**str))
-        (*str)++;
 }
 
 

@@ -5,8 +5,10 @@
 #include <ctype.h>
 
 const int ASM_SIGN = 'CABO';
+const  char ASM_VER[8] = "0.1.0";
 
-const  char ASM_VER[8] = "0.0.1";
+const int CMD_SIZE = sizeof (char);
+const int ARG_SIZE = sizeof (int);
 
 struct FileData {
     int signature;
@@ -22,7 +24,7 @@ enum AsmCmd {
     NUM_CMD     // auto completes to the next number
 };
 
-const char cmd_names[NUM_CMD][10] = {"NOT_A_CMD", "push", "in", "mul", "out", "add"};
+const char cmd_names[NUM_CMD][10] = {"NOT_A_CMD", "PUSH", "IN", "MUL", "OUT", "ADD"};
 
 const int cmd_args[NUM_CMD] = {-1, 1, 0, 0, 0, 0};
 
