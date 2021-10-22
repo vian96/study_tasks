@@ -7,16 +7,16 @@
 
 #include <conio.h>
 
-//#define NDEBUG
+#define NDEBUG
 
 #ifndef NDEBUG
 
-#define deb(...) printf (__VA_ARGS__);
+#define DEB(...) printf (__VA_ARGS__);
 #define wait //_getch();
 
 #else // debug
 
-#define deb(...) 
+#define DEB(...) 
 #define wait 
 
 #endif // not debug
@@ -89,73 +89,41 @@ int main (int argc, char *argv[]) {
         return 0;
     }
 
-    deb ("Starting executing..\n");
+    DEB ("Starting executing..\n");
 
     Stack stack = {};
     stack_ctor (&stack, 0, sizeof (int));
 
-    deb ("Initialized stack..\n");
+    DEB ("Initialized stack..\n");
     
 #define PUSH(val) {int VAL__ = (val); stack_push (&stack, &VAL__);}
 #define POP (*(int*) stack_pop (&stack))
 #define ARG (get_arg (bin + ip))
 
     while (ip < file_len) {
-        deb ("while..\n");
+        DEB ("while..\n");
+
+#define DEF_CMD_(num, name, args, code)         \
+    case CMD_##name:                            \
+        DEB ("Doing " #name " at pos %d\n", ip);\
+        ip += CMD_SIZE;                         \
+                                                \
+        code;                                   \
+                                                \
+        wait;                                   \
+        break;                                  
 
         switch (*(bin + ip)) {
-        case CMD_PUSH:
-            ip += CMD_SIZE;
             
-            deb ("push..\n");
-            deb ("CMD: push ip: %d, arg: %d\n", ip, ARG);
-            
-            PUSH(ARG);
-            deb ("pushed..\n");
+        #include "commands.defs"
 
-            ip += ARG_SIZE;
-
-            wait
-            break;
-        case CMD_IN:
-            ip += CMD_SIZE;
-            
-            PUSH (input_int ());
-            deb ("Pushed in..\n");
-
-            wait
-            break;
-        case CMD_MUL:
-            ip += CMD_SIZE;
-            
-            deb ("Mul..\n");
-            PUSH (POP * POP);
-            deb ("Pushed mul..\n");
-            
-            wait
-            break;
-        case CMD_OUT:
-            ip += CMD_SIZE;
-
-            printf ("OUT: %d\n", POP);
-            
-            wait
-            break;
-        case CMD_ADD:
-            ip += CMD_SIZE;
-
-            deb ("Adding numbers..\n");
-            PUSH (POP + POP);
-            deb ("Pushed add...\n");
-
-            wait
-            break;
         default:
-            deb ("ERROR: unknown command at pos %d with value %d, exiting cpu!\n", ip, bin[ip]);
+            printf ("ERROR: unknown command at pos %d with value %d, exiting cpu!\n", ip, bin[ip]);
             free (bin);
             return 0;
         }
     }
+#undef DEF_CMD_
 
 #undef PUSH
 #undef POP
