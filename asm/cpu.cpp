@@ -27,6 +27,7 @@ void clear_input_buffer ();
 
 int input_int ();
 
+// TODO unused function, remove it
 uint64_t reverse_bytes (uint64_t bytes);
 
 int main (int argc, char *argv[]) {
@@ -59,13 +60,12 @@ int main (int argc, char *argv[]) {
     int ip = 0;
 
     if (sizeof (ASM_SIGN) + sizeof (ASM_VER) >= file_len) {
-        printf ("ERROR: file is corrupted, it is too small or has bad length\n");
+        printf ("ERROR: file is corrupted, it is too small\n");
         free (bin);
         
         return 0;
     }
 
-    //FileData file_data = {};
     int asm_sign = 0;
     char asm_ver[8] = "";
 
@@ -112,6 +112,7 @@ int main (int argc, char *argv[]) {
                                                 \
         wait;                                   \
         break;                                  
+// end of define DEF_CMD_
 
         switch (*(bin + ip)) {
             
@@ -123,6 +124,7 @@ int main (int argc, char *argv[]) {
             return 0;
         }
     }
+
 #undef DEF_CMD_
 
 #undef PUSH
@@ -151,6 +153,7 @@ int input_int () {
     return x;
 }
 
+// TODO unused function, remove it
 uint64_t reverse_bytes (uint64_t bytes) {
     uint64_t aux = 0;
     uint8_t byte;
