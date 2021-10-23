@@ -23,6 +23,8 @@ int count_num_args (const char *cmd);
 
 void set_arg (const char **str, char *out);
 
+char get_type_arg (const char *str);
+
 int main (int argc, char *argv[]) {
     if (argc != 2) {
         printf (
@@ -40,7 +42,6 @@ int main (int argc, char *argv[]) {
     }
 
     const char *in_name = argv[1];
-    size_t name_len = strlen (in_name);
 
     char *out_name = create_out_name (in_name);
 
@@ -162,6 +163,15 @@ size_t get_out_size (const FileText *code) {
 
         int args = count_num_args (str + strlen (cmd_names[cmd]));
 
+        if (args == -1) {
+            printf (
+                "Syntax ERROR at line %d: unrecognised argument after command %s\n%s\n", 
+                line + 1, cmd_names[cmd], str
+            );
+
+            return 0;
+        }
+
         if (cmd_args[cmd] != args) {
             printf (
                 "Syntax ERROR at line %d: expected %d argument after command %s, got %d\n%s\n", 
@@ -218,8 +228,12 @@ int count_num_args (const char *cmd) {
     while (*cmd) {
         skip_blank (&cmd); // moving to arg
 
-        if (*cmd)
+        if (*cmd) {
+            if (!get_type_arg (cmd))
+                return -1;
+
             count++;
+        }
         
         skip_not_blank (&cmd); // skiping arg
     }
@@ -234,14 +248,55 @@ void set_arg (const char **str, char *out) {
 
     skip_blank (str);
 
-    int res = atoi (*str);
-    char *bytes = (char*) &res;
+    switch (get_type_arg (*str)) {
+    case ARG_INT: {
+        int res = 0;
+        const char *bytes = (const char*) &res;
 
-    for (int i = 0; i < sizeof (int); i++)
-        out[i] = bytes[i];
+        sscanf (*str, "%d", &res);
+        
+        out[0] = ARG_INT;
+        out++;
+
+        for (int i = 0; i < sizeof (int); i++)
+            out[i] = bytes[i];
+
+        break;
+    }
+    case ARG_REG:
+        out[0] = ARG_REG;
+        out++;
+
+        out[0] = (*str)[0] - 'A';
+        for (int i = 1; i < sizeof (int); i++)
+            out[i] = 0;
+
+        break;
+
+    default:
+        // TODO change assert to verify ...
+        // program should not get here
+        assert (("Unknown type of arg", 0));
+        break;
+    }
 
     skip_alnum (str);
 }
+
+char get_type_arg (const char *str) {
+    assert (str);
+
+    int res = 0;
+
+    if (sscanf (str, "%d", &res)) 
+        return ARG_INT;
+    else if (str[1] == 'X' && (isspace (str[2]) || !str[2]))
+        return ARG_REG;
+    
+    // unknown type of argument
+    return 0;
+}
+
 
 
 

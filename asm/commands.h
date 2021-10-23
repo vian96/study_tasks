@@ -5,15 +5,20 @@
 #include <ctype.h>
 
 const int ASM_SIGN = 'CABO';
-const  char ASM_VER[8] = "0.1.1";
+const  char ASM_VER[8] = "0.2.1";
 
 const int CMD_SIZE = sizeof (char);
-const int ARG_SIZE = sizeof (int);
+const int ARG_SIZE = sizeof (int) + sizeof (char);
 
 struct FileData {
     int signature;
     long long version;
 };
+
+// not enum because C doesn't cupport types of enum
+const char ARG_INT = 1;
+const char ARG_REG = 2;
+const char ARG_RAM = 3;
 
 #define DEF_CMD_(num, name, args, code) CMD_##name = num,
 enum AsmCmd {

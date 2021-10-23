@@ -1,12 +1,13 @@
 ; program for calculating discriminant
-in ; b
-in ; b
-mul ; b^2
+in              ; b
+pop ax          ; ax = b
+push ax         ; b
+push ax         ; b
+mul             ; b^2
 push -4
-in ; a 
-in ; c
-mul ; ac
-mul ; -4ac
-add ; b^2 - 4ac
+in              ; a 
+in              ; c
+mul             ; ac
+mul             ; -4ac
+add             ; b^2 - 4ac
 out 
-

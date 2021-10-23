@@ -21,7 +21,16 @@
 
 #endif // not debug
 
-int get_arg (const char *bin);
+struct Arg {
+    char type;
+    int data;
+};
+
+Arg get_arg (const char *bin);
+
+int read_arg (const Arg arg);
+
+int set_arg (const Arg arg, int val);
 
 void clear_input_buffer ();
 
@@ -29,6 +38,8 @@ int input_int ();
 
 // TODO unused function, remove it
 uint64_t reverse_bytes (uint64_t bytes);
+
+int regs [10] = {0}; // not empty for compatability with C
 
 int main (int argc, char *argv[]) {
     if (argc != 2) {
@@ -98,7 +109,8 @@ int main (int argc, char *argv[]) {
     
 #define PUSH(val) {int VAL__ = (val); stack_push (&stack, &VAL__);}
 #define POP (*(int*) stack_pop (&stack))
-#define ARG (get_arg (bin + ip))
+#define READ_ARG (read_arg (get_arg (bin + ip)))
+#define SET_ARG(val) (set_arg (get_arg (bin + ip), val));
 
     while (ip < file_len) {
         DEB ("while..\n");
@@ -109,6 +121,8 @@ int main (int argc, char *argv[]) {
         ip += CMD_SIZE;                         \
                                                 \
         code;                                   \
+                                                \
+        ip += cmd_args[num] * ARG_SIZE;         \
                                                 \
         wait;                                   \
         break;                                  
@@ -121,6 +135,7 @@ int main (int argc, char *argv[]) {
         default:
             printf ("ERROR: unknown command at pos %d with value %d, exiting cpu!\n", ip, bin[ip]);
             free (bin);
+
             return 0;
         }
     }
@@ -129,22 +144,64 @@ int main (int argc, char *argv[]) {
 
 #undef PUSH
 #undef POP
-#undef ARG
+#undef READ_ARG
+#undef SET_ARG
 
     printf ("DONE\n");
 
     free (bin);
 }
 
-int get_arg (const char *bin) {
+Arg get_arg (const char *bin) {
     assert (bin);
 
-    return *(int*) bin;
+    Arg arg = {};
+
+    arg.type = *bin;
+    bin++;
+
+    arg.data = *(int*) bin;
+    
+    return arg;
+}
+
+int read_arg (const Arg arg) {
+    switch (arg.type) {
+    case ARG_INT:
+        return arg.data;
+    
+    case ARG_REG:
+        return regs[arg.data];
+    
+    default:
+        // TODO change assert to verify ...
+        // program should not get here
+        assert (("Unknown type of arg to read", 0));
+        return 0;
+    }
+}
+
+int set_arg (const Arg arg, int val) {
+    switch (arg.type) {
+    case ARG_REG:
+        regs[arg.data] = val;
+        break;
+    
+    default:
+        // TODO change assert to verify ...
+        // program should not get here
+        assert (("Unknown type of arg to read", 0));
+        
+        return 0;
+    }
+
+    return val;
 }
 
 int input_int () {
     int x = 0;
     printf ("Input int: ");
+
     while (!scanf ("%d", &x)) {
         printf ("There is an error in your input, try again:\n");
         clear_input_buffer ();
