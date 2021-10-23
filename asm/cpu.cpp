@@ -21,10 +21,29 @@
 
 #endif // not debug
 
+const int num_regs = 10;
+
+struct Cpu {
+    char *bin;
+    int ip;
+
+    Stack stack;
+    int regs [num_regs]; // {} are not empty for compatability with C
+};
+
+// TODO should i leave it global?
+Cpu cpu = {};
+
+void cpu_ctor ();
+
+void cpu_dtor ();
+
 struct Arg {
     char type;
     int data;
 };
+
+// TODO divide in different files
 
 Arg get_arg (const char *bin);
 
@@ -36,10 +55,10 @@ void clear_input_buffer ();
 
 int input_int ();
 
+bool check_file_data (const char *bin);
+
 // TODO unused function, remove it
 uint64_t reverse_bytes (uint64_t bytes);
-
-int regs [10] = {0}; // not empty for compatability with C
 
 int main (int argc, char *argv[]) {
     if (argc != 2) {
@@ -50,91 +69,75 @@ int main (int argc, char *argv[]) {
         return 0;
     }
 
-    if (strlen (argv[1]) < 6 || strcmp (argv[1] + strlen (argv[1]) - 5, ".boac") != 0) {
+    const char *in_name = argv[1];
+
+    if (strlen (in_name) < 6 || strcmp (in_name + strlen (in_name) - 5, ".boac") != 0) {
         printf (
             "ERROR: wrong name of input file\n"
             "Input file should have name \"*name*.boac\" where len(name) > 0\n"
         );
     } 
 
-    const char *in_name = argv[1];
-
     FILE *f_in = fopen_err (in_name, "rb");
     if (!f_in)
         return 0;
 
+    cpu_ctor ();
+    DEB ("Initialized cpu..\n");
+
     int file_len = 0;
-    char *bin = read_symbols_file (f_in, &file_len);
+    cpu.bin = read_symbols_file (f_in, &file_len);
 
     fclose (f_in);
 
-    int ip = 0;
-
     if (sizeof (ASM_SIGN) + sizeof (ASM_VER) >= file_len) {
         printf ("ERROR: file is corrupted, it is too small\n");
-        free (bin);
+        free (cpu.bin);
         
         return 0;
     }
 
-    int asm_sign = 0;
-    char asm_ver[8] = "";
+    if (!check_file_data (cpu.bin)) {
+        cpu_dtor ();
 
-    memcpy (&asm_sign, bin, sizeof (asm_sign));
-    ip += sizeof (asm_sign);
-
-    memcpy (&asm_ver, bin + ip, sizeof (asm_ver));
-    ip += sizeof (asm_ver);
-
-    if (asm_sign != ASM_SIGN) {
-        printf ("ERROR: file is corrupted, signature is not okay\n");
-        free (bin);
-        
         return 0;
     }
 
-    if (strcmp (asm_ver, ASM_VER) != 0) {
-        printf ("File version is not compatible with this cpu, expected: %s, got: %s\n", ASM_VER, asm_ver);
-        free (bin);
-        
-        return 0;
-    }
+    cpu.ip += sizeof (ASM_VER) + sizeof (ASM_SIGN);
 
     DEB ("Starting executing..\n");
-
-    Stack stack = {};
-    stack_ctor (&stack, 0, sizeof (int));
-
-    DEB ("Initialized stack..\n");
     
-#define PUSH(val) {int VAL__ = (val); stack_push (&stack, &VAL__);}
-#define POP (*(int*) stack_pop (&stack))
-#define READ_ARG (read_arg (get_arg (bin + ip)))
-#define SET_ARG(val) (set_arg (get_arg (bin + ip), val));
+#define PUSH(val) {int VAL__ = (val); stack_push (&cpu.stack, &VAL__);}
+#define POP (*(int*) stack_pop (&cpu.stack))
+#define READ_ARG (read_arg (get_arg (cpu.bin + cpu.ip)))
+#define SET_ARG(val) (set_arg (get_arg (cpu.bin + cpu.ip), val));
 
-    while (ip < file_len) {
+    while (cpu.ip < file_len) {
         DEB ("while..\n");
 
-#define DEF_CMD_(num, name, args, code)         \
-    case CMD_##name:                            \
-        DEB ("Doing " #name " at pos %d\n", ip);\
-        ip += CMD_SIZE;                         \
-                                                \
-        code;                                   \
-                                                \
-        ip += cmd_args[num] * ARG_SIZE;         \
-                                                \
-        wait;                                   \
+#define DEF_CMD_(num, name, args, code)                 \
+    case CMD_##name:                                    \
+        DEB ("Doing " #name " at pos %d\n", cpu.ip);    \
+        cpu.ip += CMD_SIZE;                             \
+                                                        \
+        code;                                           \
+                                                        \
+        cpu.ip += cmd_args[num] * ARG_SIZE;             \
+                                                        \
+        wait;                                           \
         break;                                  
 // end of define DEF_CMD_
 
-        switch (*(bin + ip)) {
+        switch (*(cpu.bin + cpu.ip)) {
             
         #include "commands.defs"
 
         default:
-            printf ("ERROR: unknown command at pos %d with value %d, exiting cpu!\n", ip, bin[ip]);
-            free (bin);
+            printf (
+                "ERROR: unknown command at pos %d with value %d, exiting cpu!\n", 
+                cpu.ip, cpu.bin[cpu.ip]
+            );
+            free (cpu.bin);
 
             return 0;
         }
@@ -147,9 +150,32 @@ int main (int argc, char *argv[]) {
 #undef READ_ARG
 #undef SET_ARG
 
-    printf ("DONE\n");
+    cpu_dtor ();
 
-    free (bin);
+    printf ("DONE\n");
+}
+
+void cpu_ctor () {
+    cpu.bin = nullptr;
+    cpu.ip = 0;
+    
+    for (int i = 0; i < num_regs; i++)
+        cpu.regs[i] = 0;
+    
+    cpu.stack = {};
+    stack_ctor (&cpu.stack, 0, sizeof (int));
+}
+
+void cpu_dtor () {
+    free (cpu.bin);
+
+    cpu.bin = nullptr;
+    cpu.ip = 0;
+    
+    for (int i = 0; i < num_regs; i++)
+        cpu.regs[i] = 0;
+    
+    stack_dtor (&cpu.stack);
 }
 
 Arg get_arg (const char *bin) {
@@ -171,7 +197,7 @@ int read_arg (const Arg arg) {
         return arg.data;
     
     case ARG_REG:
-        return regs[arg.data];
+        return cpu.regs[arg.data];
     
     default:
         // TODO change assert to verify ...
@@ -184,7 +210,7 @@ int read_arg (const Arg arg) {
 int set_arg (const Arg arg, int val) {
     switch (arg.type) {
     case ARG_REG:
-        regs[arg.data] = val;
+        cpu.regs[arg.data] = val;
         break;
     
     default:
@@ -227,4 +253,28 @@ void clear_input_buffer () {
 
     while (getchar () != '\n') { ; }
 }
+
+bool check_file_data (const char *bin) {
+    int asm_sign = 0;
+    char asm_ver[8] = "";
+
+    memcpy (&asm_sign, cpu.bin, sizeof (asm_sign));
+    memcpy (&asm_ver, cpu.bin + sizeof (asm_sign), sizeof (asm_ver));
+    
+
+    if (asm_sign != ASM_SIGN) {
+        printf ("ERROR: file is corrupted, signature is not okay\n");
+        
+        return 0;
+    }
+
+    if (strcmp (asm_ver, ASM_VER) != 0) {
+        printf ("File version is not compatible with this cpu, expected: %s, got: %s\n", ASM_VER, asm_ver);
+        
+        return 0;
+    }
+
+    return 1;
+}
+
 
