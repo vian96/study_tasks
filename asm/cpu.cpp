@@ -24,7 +24,7 @@
 const int num_regs = 10;
 
 struct Cpu {
-    char *bin;
+    const char *bin;
     int ip;
 
     Stack stack;
@@ -38,18 +38,9 @@ void cpu_ctor ();
 
 void cpu_dtor ();
 
-struct Arg {
-    char type;
-    int data;
-};
-
 // TODO divide in different files
 
-Arg get_arg (const char *bin);
-
-int read_arg (const Arg arg);
-
-int set_arg (const Arg arg, int val);
+int *get_arg (const char *bin);
 
 void clear_input_buffer ();
 
@@ -92,7 +83,7 @@ int main (int argc, char *argv[]) {
 
     if (sizeof (ASM_SIGN) + sizeof (ASM_VER) >= file_len) {
         printf ("ERROR: file is corrupted, it is too small\n");
-        free (cpu.bin);
+        cpu_dtor ();
         
         return 0;
     }
@@ -109,8 +100,7 @@ int main (int argc, char *argv[]) {
     
 #define PUSH(val) {int VAL__ = (val); stack_push (&cpu.stack, &VAL__);}
 #define POP (*(int*) stack_pop (&cpu.stack))
-#define READ_ARG (read_arg (get_arg (cpu.bin + cpu.ip)))
-#define SET_ARG(val) (set_arg (get_arg (cpu.bin + cpu.ip), val));
+#define ARG (*get_arg (cpu.bin + cpu.ip))
 
     while (cpu.ip < file_len) {
         DEB ("while..\n");
@@ -137,7 +127,7 @@ int main (int argc, char *argv[]) {
                 "ERROR: unknown command at pos %d with value %d, exiting cpu!\n", 
                 cpu.ip, cpu.bin[cpu.ip]
             );
-            free (cpu.bin);
+            cpu_dtor ();
 
             return 0;
         }
@@ -167,7 +157,7 @@ void cpu_ctor () {
 }
 
 void cpu_dtor () {
-    free (cpu.bin);
+    free ((char*) cpu.bin);
 
     cpu.bin = nullptr;
     cpu.ip = 0;
@@ -178,26 +168,19 @@ void cpu_dtor () {
     stack_dtor (&cpu.stack);
 }
 
-Arg get_arg (const char *bin) {
+int *get_arg (const char *bin) {
     assert (bin);
 
-    Arg arg = {};
-
-    arg.type = *bin;
+    char type = *bin;
     bin++;
+    int data = *(int*) bin;
 
-    arg.data = *(int*) bin;
-    
-    return arg;
-}
-
-int read_arg (const Arg arg) {
-    switch (arg.type) {
+    switch (type) {
     case ARG_INT:
-        return arg.data;
+        return (int*) bin;
     
     case ARG_REG:
-        return cpu.regs[arg.data];
+        return cpu.regs + data;
     
     default:
         // TODO change assert to verify ...
@@ -205,23 +188,6 @@ int read_arg (const Arg arg) {
         assert (("Unknown type of arg to read", 0));
         return 0;
     }
-}
-
-int set_arg (const Arg arg, int val) {
-    switch (arg.type) {
-    case ARG_REG:
-        cpu.regs[arg.data] = val;
-        break;
-    
-    default:
-        // TODO change assert to verify ...
-        // program should not get here
-        assert (("Unknown type of arg to read", 0));
-        
-        return 0;
-    }
-
-    return val;
 }
 
 int input_int () {
@@ -258,8 +224,8 @@ bool check_file_data (const char *bin) {
     int asm_sign = 0;
     char asm_ver[8] = "";
 
-    memcpy (&asm_sign, cpu.bin, sizeof (asm_sign));
-    memcpy (&asm_ver, cpu.bin + sizeof (asm_sign), sizeof (asm_ver));
+    memcpy (&asm_sign, bin, sizeof (asm_sign));
+    memcpy (&asm_ver, bin + sizeof (asm_sign), sizeof (asm_ver));
     
 
     if (asm_sign != ASM_SIGN) {

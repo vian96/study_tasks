@@ -1,0 +1,15 @@
+
+// DEF_CMD_ (num, name, args, code)
+
+DEF_CMD_ (1, PUSH, 1, {PUSH(ARG);})
+
+DEF_CMD_ (2, IN, 0, {PUSH (input_int ());})
+
+DEF_CMD_ (3, MUL, 0, {PUSH (POP * POP);})
+
+DEF_CMD_ (4, OUT, 0, {printf ("OUT: %d\n", POP);})
+
+DEF_CMD_ (5, ADD, 0, {PUSH (POP + POP);})
+
+DEF_CMD_ (6, POP, 1, {ARG = POP;})
+
