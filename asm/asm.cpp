@@ -122,7 +122,7 @@ char *parse_commands (const FileText *code, size_t *out_size) {
    
     *out_size = get_out_size (code);
 
-    if (!out_size)
+    if (!*out_size)
         return nullptr;
 
     char *out = (char*) calloc (*out_size, 1);
@@ -143,25 +143,29 @@ size_t get_out_size (const FileText *code) {
     size_t out_size = 0;
 
     for (size_t line = 0; line < code->count; line++) {
-        if (is_empty_string (code->strings[line].begin))
+        const char *str = code->strings[line].begin;
+        
+        if (is_empty_string (str))
             continue;
                 
-        AsmCmd cmd = get_cmd (code->strings[line].begin);
+        skip_blank (&str);
+        
+        AsmCmd cmd = get_cmd (str);
         
         if (cmd == -1) {
             printf (
                 "Syntax ERROR at line %d: wrong commmand\n%s\n", 
-                line + 1, code->strings[line].begin
+                line + 1, str
             );
             return 0;
         }
 
-        int args = count_num_args (code->strings[line].begin + strlen (cmd_names[cmd]));
+        int args = count_num_args (str + strlen (cmd_names[cmd]));
 
         if (cmd_args[cmd] != args) {
             printf (
                 "Syntax ERROR at line %d: expected %d argument after command %s, got %d\n%s\n", 
-                line + 1, cmd_args[cmd], cmd_names[cmd], args, code->strings[line].begin
+                line + 1, cmd_args[cmd], cmd_names[cmd], args, str
             );
             return 0;
         }
@@ -184,6 +188,8 @@ size_t create_out_arr (const FileText *code, char *out) {
 
         if (is_empty_string (str))
             continue;
+        
+        skip_blank (&str);
         
         AsmCmd cmd = get_cmd (str);
 
