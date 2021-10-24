@@ -33,7 +33,7 @@ struct Cpu {
     int ram  [NUM_RAM];
 };
 
-// TODO should i leave it global?
+// TODO should i have it global?
 Cpu cpu = {};
 
 void cpu_ctor ();
@@ -69,6 +69,7 @@ int main (int argc, char *argv[]) {
             "ERROR: wrong name of input file\n"
             "Input file should have name \"*name*.boac\" where len(name) > 0\n"
         );
+        return 0;
     } 
 
     FILE *f_in = fopen_err (in_name, "rb");

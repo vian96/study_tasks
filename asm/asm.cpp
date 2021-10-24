@@ -248,6 +248,7 @@ void set_arg (const char **str, char *out) {
 
     skip_blank (str);
 
+    // TODO functions get_reg, get_int, set_int and so on
     switch (get_type_arg (*str)) {
     case ARG_INT: {
         int res = 0;
