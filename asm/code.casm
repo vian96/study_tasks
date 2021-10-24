@@ -13,5 +13,15 @@ in              ; c
 mul             ; ac
 mul             ; -4ac
 add             ; b^2 - 4ac
+pop ax          ; discriminant
+push ax
+push 0 
+je :end         ; jump to end if D == 0
+push ax         ; discriminant
 out 
-jmp :start; go to begin of program
+jmp :start          ; go to begin of program
+
+:end
+push 993
+out 
+

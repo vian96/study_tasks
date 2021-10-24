@@ -7,7 +7,7 @@
 
 #include <conio.h>
 
-//#define NDEBUG
+#define NDEBUG
 
 #ifndef NDEBUG
 
@@ -104,6 +104,9 @@ int main (int argc, char *argv[]) {
 #define PUSH(val) {int VAL__ = (val); stack_push (&cpu.stack, &VAL__);}
 #define POP (*(int*) stack_pop (&cpu.stack))
 #define ARG (*get_arg (cpu.bin + cpu.ip))
+// TODO know why [num] doesn't work in this define
+// and solve problem with arg_size
+#define JUMP(pos) {cpu.ip = pos - ARG_SIZE;}
 
     while (cpu.ip < file_len) {
         DEB ("while..\n");
@@ -141,8 +144,8 @@ int main (int argc, char *argv[]) {
 
 #undef PUSH
 #undef POP
-#undef READ_ARG
-#undef SET_ARG
+#undef ARG
+#undef JUMP
 
     cpu_dtor ();
 
@@ -199,9 +202,9 @@ int *get_arg (const char *bin) {
         return cpu.ram + cpu.regs[data];
     
     default:
-        // TODO change assert to verify ...
-        // program should not get here
-        assert (("Unknown type of arg to read", 0));
+        // program should not get here in normal situation
+        printf ("Unknown type of arg to read, got %d at pos\n", type, cpu.ip);
+        abort ();
         return 0;
     }
 }

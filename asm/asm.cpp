@@ -41,8 +41,6 @@ struct Label {
     int value;
 };
 
-Label labels[LABEL_NUM] = {}; // TODO function init_labels
-
 int get_label_val (const char *str);
 
 // return 1 on succes, 0 on failure
@@ -456,10 +454,18 @@ int set_label_val (const char *str, int val) {
 Label *get_label (const char *str) {
     assert (str);
 
+    // TODO is it ok to have it static?
+    static Label labels[LABEL_NUM] = {};
+
     char name[LABEL_LEN] = {0}; // {0} for compatability with C
     for (int i = 0; i < LABEL_LEN && str[i] && isalnum (str[i]); i++) 
         name[i] = str[i];
     
+    if (name[19]) {
+        printf ("Syntax error: label name is too long, max is %d\n", LABEL_LEN);
+        return nullptr;
+    }
+
     if (!name[0]) {
         printf ("Syntax error: no label name\n");
         return nullptr;

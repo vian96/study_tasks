@@ -15,4 +15,6 @@ DEF_CMD_ (6, POP, 1, {ARG = POP;})
 
 // TODO solve this
 // -ARG_SIZE is needed because macro subs it after executing code
-DEF_CMD_ (7, JMP, 1, {cpu.ip = ARG - ARG_SIZE;})
+DEF_CMD_ (7, JMP, 1, {JUMP (ARG);})
+
+DEF_CMD_ (8, JE, 1, {if (POP == POP) JUMP (ARG);})
