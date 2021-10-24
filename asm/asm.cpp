@@ -272,6 +272,30 @@ void set_arg (const char **str, char *out) {
             out[i] = 0;
 
         break;
+    
+    case ARG_RAM: {
+        out[0] = ARG_RAM;
+        out++;
+
+        int res = 0;
+        const char *bytes = (const char*) &res;
+
+        sscanf (*str + 1, "%d", &res);
+
+        for (int i = 0; i < sizeof (int); i++)
+            out[i] = bytes[i];
+
+        break;
+    }
+    case ARG_REG_RAM:
+        out[0] = ARG_REG_RAM;
+        out++;
+
+        out[0] = (*str)[1] - 'A';
+        for (int i = 1; i < sizeof (int); i++)
+            out[i] = 0;
+
+        break;
 
     default:
         // TODO change assert to verify ...
@@ -290,8 +314,36 @@ char get_type_arg (const char *str) {
 
     if (sscanf (str, "%d", &res)) 
         return ARG_INT;
-    else if (str[1] == 'X' && (isspace (str[2]) || !str[2]))
+    
+    if (str[1] == 'X' && (isspace (str[2]) || !str[2]))
         return ARG_REG;
+
+    if (str[0] == '[') { 
+        // RAM, need to identify how you access
+
+        char *bracket = (char*) strchr (str, ']');
+        
+        if (!bracket) {
+            printf ("Syntax ERROR: unclosed '[' at line:\n%s\n", str);
+            return 0;
+        }
+        
+        *bracket = '\0';
+        char arg = get_type_arg (str + 1);
+        *bracket = ']';
+
+        switch (arg) {
+        case ARG_INT:
+            return ARG_RAM;
+            
+        case ARG_REG:
+            return ARG_REG_RAM;
+
+        default:
+            printf ("Unknown type of address of ram at line:\n%s\n", str);
+            return 0;
+        }
+    }
     
     // unknown type of argument
     return 0;

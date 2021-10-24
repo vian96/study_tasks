@@ -21,14 +21,16 @@
 
 #endif // not debug
 
-const int num_regs = 10;
+const int NUM_REGS = 16;
+const int NUM_RAM = 128;
 
 struct Cpu {
     const char *bin;
     int ip;
 
     Stack stack;
-    int regs [num_regs]; // {} are not empty for compatability with C
+    int regs [NUM_REGS];
+    int ram  [NUM_RAM];
 };
 
 // TODO should i leave it global?
@@ -149,9 +151,12 @@ void cpu_ctor () {
     cpu.bin = nullptr;
     cpu.ip = 0;
     
-    for (int i = 0; i < num_regs; i++)
+    for (int i = 0; i < NUM_REGS; i++)
         cpu.regs[i] = 0;
     
+    for (int i = 0; i < NUM_RAM; i++)
+        cpu.ram[i] = 0;
+
     cpu.stack = {};
     stack_ctor (&cpu.stack, 0, sizeof (int));
 }
@@ -162,8 +167,11 @@ void cpu_dtor () {
     cpu.bin = nullptr;
     cpu.ip = 0;
     
-    for (int i = 0; i < num_regs; i++)
+    for (int i = 0; i < NUM_REGS; i++)
         cpu.regs[i] = 0;
+
+    for (int i = 0; i < NUM_RAM; i++)
+        cpu.ram[i] = 0;
     
     stack_dtor (&cpu.stack);
 }
@@ -181,6 +189,12 @@ int *get_arg (const char *bin) {
     
     case ARG_REG:
         return cpu.regs + data;
+
+    case ARG_RAM:
+        return cpu.ram + data;
+
+    case ARG_REG_RAM:
+        return cpu.ram + cpu.regs[data];
     
     default:
         // TODO change assert to verify ...

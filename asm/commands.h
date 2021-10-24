@@ -15,10 +15,12 @@ struct FileData {
     long long version;
 };
 
-// not enum because C doesn't cupport types of enum
-const char ARG_INT = 1;
-const char ARG_REG = 2;
-const char ARG_RAM = 3;
+enum ArgType{
+    ARG_INT      = 1,
+    ARG_REG      = 2,
+    ARG_RAM      = 3,
+    ARG_REG_RAM  = 4, // acces memory by address from reg
+}; 
 
 #define DEF_CMD_(num, name, args, code) CMD_##name = num,
 enum AsmCmd {
