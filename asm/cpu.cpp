@@ -115,6 +115,7 @@ int main (int argc, char *argv[]) {
                                                         \
         code;                                           \
                                                         \
+        /* TODO change next line for jmp command */     \
         cpu.ip += cmd_args[num] * ARG_SIZE;             \
                                                         \
         wait;                                           \

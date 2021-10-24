@@ -15,11 +15,12 @@ struct FileData {
     long long version;
 };
 
-enum ArgType{
+enum ArgType {
     ARG_INT      = 1,
     ARG_REG      = 2,
     ARG_RAM      = 3,
     ARG_REG_RAM  = 4, // acces memory by address from reg
+    ARG_LABEL    = 5
 }; 
 
 #define DEF_CMD_(num, name, args, code) CMD_##name = num,

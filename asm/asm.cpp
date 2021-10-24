@@ -321,7 +321,6 @@ char get_type_arg (const char *str) {
 
     if (str[0] == '[') { 
         // RAM, need to identify how you access
-
         char *bracket = (char*) strchr (str, ']');
         
         if (!bracket) {
@@ -344,6 +343,11 @@ char get_type_arg (const char *str) {
             printf ("Unknown type of address of ram at line:\n%s\n", str);
             return 0;
         }
+    }
+
+    if (str[0] == ':') {
+        // label
+        return ARG_LABEL;
     }
     
     // unknown type of argument
