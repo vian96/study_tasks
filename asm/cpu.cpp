@@ -7,12 +7,12 @@
 
 #include <conio.h>
 
-#define NDEBUG
+//#define NDEBUG
 
 #ifndef NDEBUG
 
 #define DEB(...) printf (__VA_ARGS__);
-#define wait //_getch();
+#define wait _getch();
 
 #else // debug
 

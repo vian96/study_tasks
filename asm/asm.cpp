@@ -9,6 +9,14 @@
 #include <assert.h>
 #include <string.h>
 
+#define NDEBUG
+
+#ifndef NDEBUG
+#define DEB(...) printf (__VA_ARGS__);
+#else // debug
+#define DEB(...) 
+#endif // not debug
+
 // TODO change int to int32_t or somthing
 
 char *create_out_name (const char *in_name);
@@ -149,7 +157,7 @@ char *parse_commands (const FileText *code, size_t *out_size) {
 
     assert (f_pos == *out_size);
 
-    printf ("Starting second run..\n");
+    DEB ("Starting second run..\n");
 
     // second run for jumps
     f_pos = create_out_arr (code, out);
@@ -449,7 +457,7 @@ Label *get_label (const char *str) {
     assert (str);
 
     char name[LABEL_LEN] = {0}; // {0} for compatability with C
-    for (int i = 0; i < LABEL_LEN && *str && !isspace (*str); i++) 
+    for (int i = 0; i < LABEL_LEN && str[i] && isalnum (str[i]); i++) 
         name[i] = str[i];
     
     if (!name[0]) {
@@ -460,7 +468,7 @@ Label *get_label (const char *str) {
     int cnt = 0;
     for (cnt = 0; labels[cnt].name[0] && cnt < LABEL_NUM; cnt++)
         if (strcmp (labels[cnt].name, name) == 0) {
-            printf (
+            DEB (
                 "Found label at pos %d with name %s and val %d\n", 
                 cnt, name, labels[cnt].value
             );
@@ -473,7 +481,7 @@ Label *get_label (const char *str) {
     }
 
     strcpy (labels[cnt].name, name);
-    printf (
+    DEB (
         "Added label at pos %d with name %s and val %d\n", 
         cnt, name, labels[cnt].value
     );
