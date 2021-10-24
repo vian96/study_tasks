@@ -1,4 +1,5 @@
 ; program for calculating discriminant
+:start
 in              ; b
 push 4
 pop ax
@@ -13,4 +14,4 @@ mul             ; ac
 mul             ; -4ac
 add             ; b^2 - 4ac
 out 
-jmp 12          ; go to begin of program
+jmp :start; go to begin of program

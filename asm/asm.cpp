@@ -25,6 +25,23 @@ void set_arg (const char **str, char *out);
 
 char get_type_arg (const char *str);
 
+const int LABEL_LEN = 20;
+const int LABEL_NUM = 100;
+
+struct Label {
+    char name[LABEL_LEN];
+    int value;
+};
+
+Label labels[LABEL_NUM] = {}; // TODO function init_labels
+
+int get_label_val (const char *str);
+
+// return 1 on succes, 0 on failure
+int set_label_val (const char *str, int val);
+
+Label *get_label (const char *str);
+
 int main (int argc, char *argv[]) {
     if (argc != 2) {
         printf (
@@ -129,10 +146,15 @@ char *parse_commands (const FileText *code, size_t *out_size) {
     char *out = (char*) calloc (*out_size, 1);
     
     size_t f_pos = create_out_arr (code, out);
-    
+
     assert (f_pos == *out_size);
 
+    printf ("Starting second run..\n");
+
     // second run for jumps
+    f_pos = create_out_arr (code, out);
+
+    assert (f_pos == *out_size);
 
     return out;
 }
@@ -151,6 +173,23 @@ size_t get_out_size (const FileText *code) {
                 
         skip_blank (&str);
         
+        if (str[0] == ':') {
+            // label
+            str++; // skips ':'
+
+            skip_alnum (&str);
+            skip_blank (&str);
+            
+            if (*str) {
+                printf (
+                    "Syntax ERROR at line %d: symbols after name of label\n%s\n", 
+                    line + 1, str
+                );
+            }
+
+            continue;
+        }
+
         AsmCmd cmd = get_cmd (str);
         
         if (cmd == -1) {
@@ -200,6 +239,16 @@ size_t create_out_arr (const FileText *code, char *out) {
             continue;
         
         skip_blank (&str);
+
+        if (str[0] == ':') {
+            // label
+            if (!set_label_val (str + 1, f_pos + sizeof (ASM_VER) + sizeof (ASM_SIGN))) {
+                printf ("Error at line:\n%s\n", str);
+                return 0;
+            }
+
+            continue;
+        }
         
         AsmCmd cmd = get_cmd (str);
 
@@ -298,6 +347,25 @@ void set_arg (const char **str, char *out) {
 
         break;
 
+    case ARG_LABEL: {
+        out[0] = ARG_INT;
+        out++;
+
+        int res = get_label_val (*str + 1);
+        if (res == -1) {
+            printf ("Error at line:\n%s\n", str);
+
+            // TODO return values for errors
+            return;
+        }
+
+        const char *bytes = (const char*) &res;
+
+        for (int i = 0; i < sizeof (int); i++)
+            out[i] = bytes[i];
+
+        break;
+    }
     default:
         // TODO change assert to verify ...
         // program should not get here
@@ -328,6 +396,7 @@ char get_type_arg (const char *str) {
             return 0;
         }
         
+        // TODO can i do this with const char*?
         *bracket = '\0';
         char arg = get_type_arg (str + 1);
         *bracket = ']';
@@ -346,7 +415,6 @@ char get_type_arg (const char *str) {
     }
 
     if (str[0] == ':') {
-        // label
         return ARG_LABEL;
     }
     
@@ -354,6 +422,64 @@ char get_type_arg (const char *str) {
     return 0;
 }
 
+int get_label_val (const char *str) {
+    assert (str);
+
+    Label *t = get_label (str);
+    if (!t)
+        return -1;
+    
+    return t->value;
+}
+
+// return 1 on succes, 0 on failure
+int set_label_val (const char *str, int val) {
+    assert (str);
+
+    Label *t = get_label (str);
+    if (!t)
+        return 0;
+    
+    t->value = val;
+    
+    return 1;
+}
+
+Label *get_label (const char *str) {
+    assert (str);
+
+    char name[LABEL_LEN] = {0}; // {0} for compatability with C
+    for (int i = 0; i < LABEL_LEN && *str && !isspace (*str); i++) 
+        name[i] = str[i];
+    
+    if (!name[0]) {
+        printf ("Syntax error: no label name\n");
+        return nullptr;
+    }
+
+    int cnt = 0;
+    for (cnt = 0; labels[cnt].name[0] && cnt < LABEL_NUM; cnt++)
+        if (strcmp (labels[cnt].name, name) == 0) {
+            printf (
+                "Found label at pos %d with name %s and val %d\n", 
+                cnt, name, labels[cnt].value
+            );
+            return labels + cnt;
+        }
+
+    if (cnt == LABEL_NUM) {
+        printf ("Compilation error: too much labels in code\n");
+        return nullptr;
+    }
+
+    strcpy (labels[cnt].name, name);
+    printf (
+        "Added label at pos %d with name %s and val %d\n", 
+        cnt, name, labels[cnt].value
+    );
+
+    return labels + cnt;
+}
 
 
 
