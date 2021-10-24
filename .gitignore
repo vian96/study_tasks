@@ -1,0 +1,9 @@
+
+.vscode/settings.json
+asm/asm.exe
+asm/casm.bat
+asm/ccpu.bat
+asm/cpu.exe
+asm/stack_logs.txt
+stack/source/main.exe
+stack/source/TODO.txt
