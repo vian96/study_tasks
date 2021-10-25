@@ -7,3 +7,4 @@ asm/cpu.exe
 asm/stack_logs.txt
 stack/source/main.exe
 stack/source/TODO.txt
+asm/cpu_logs.txt

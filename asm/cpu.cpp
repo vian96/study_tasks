@@ -4,6 +4,7 @@
 #include "../stack/source/stack.h"
 
 #include <stdio.h>
+#include <math.h>
 
 #include <conio.h>
 
@@ -101,12 +102,12 @@ int main (int argc, char *argv[]) {
 
     DEB ("Starting executing..\n");
     
-#define PUSH(val) {int VAL__ = (val); stack_push (&cpu.stack, &VAL__);}
+#define PUSH(val) {int val_ = (val); stack_push (&cpu.stack, &val_); DEB ("Pushed %d\n", val_);}
 #define POP (*(int*) stack_pop (&cpu.stack))
 #define ARG (*get_arg (cpu.bin + cpu.ip))
 // TODO know why [num] doesn't work in this define
 // and solve problem with arg_size
-#define JUMP(pos) {cpu.ip = pos - ARG_SIZE;}
+#define JUMP(pos) {int pos_ = (pos); cpu.ip = pos_ - ARG_SIZE; DEB ("Jumping to %d\n", pos_);}
 
     while (cpu.ip < file_len) {
         DEB ("while..\n");
@@ -203,7 +204,7 @@ int *get_arg (const char *bin) {
     
     default:
         // program should not get here in normal situation
-        printf ("Unknown type of arg to read, got %d at pos\n", type, cpu.ip);
+        printf ("Unknown type of arg to read, got %d at pos %d, aborting\n", type, cpu.ip);
         abort ();
         return 0;
     }

@@ -13,8 +13,18 @@ DEF_CMD_ (5, ADD, 0, {PUSH (POP + POP);})
 
 DEF_CMD_ (6, POP, 1, {ARG = POP;})
 
-// TODO solve this
-// -ARG_SIZE is needed because macro subs it after executing code
 DEF_CMD_ (7, JMP, 1, {JUMP (ARG);})
 
+// equal
 DEF_CMD_ (8, JE, 1, {if (POP == POP) JUMP (ARG);})
+
+// deeper is greater than higher
+DEF_CMD_ (9, JA, 1, {int a_ = POP; int b_ = POP; if (a_ < b_) JUMP (ARG);})
+
+// higher is greater than deeper
+DEF_CMD_ (10, JB, 1, {int a_ = POP; int b_ = POP; if (a_ > b_) JUMP (ARG);})
+
+DEF_CMD_ (11, SQRT, 0, {PUSH (sqrt (POP));})
+
+// deeper / higher
+DEF_CMD_ (12, DIV, 0, {int a_ = POP; int b_ = POP; PUSH (a_ / b_);})

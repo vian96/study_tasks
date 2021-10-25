@@ -1,27 +1,108 @@
 ; program for calculating discriminant
-:start
-in              ; b
-push 4
-pop ax
-pop [ax]          ; ax = b
-push [ax]         ; b
-push [ax]         ; b
-mul             ; b^2
-push -4
-in              ; a 
-in              ; c
-mul             ; ac
-mul             ; -4ac
-add             ; b^2 - 4ac
-pop ax          ; discriminant
-push ax
-push 0 
-je :end         ; jump to end if D == 0
-push ax         ; discriminant
-out 
-jmp :start          ; go to begin of program
 
-:end
-push 993
+:start
+
+; input
+in 
+pop ax
+in
+pop bx
+in 
+pop cx
+
+; discriminant 
+push bx
+push bx
+mul ; b^2
+
+push -4
+push ax
+push cx
+mul
+mul ; -4ac
+
+add ; discriminant ------------
+pop dx 
+push dx
+out
+
+push dx
+push 0
+
+je :zero
+
+push dx
+push 0
+
+ja :more
+
+push 0
+out  ; roots
+jmp :start
+
+:zero ;----------------------------------
+push 1
+out  ; root
+
+push -1
+push bx
+mul ; -b
+
+push 2
+push ax
+mul ; 2a
+
+div ; -b/2a
 out 
+jmp :start
+
+
+
+:more ;----------------------------------
+push 2
+out  ; roots
+
+; fails here
+push dx
+sqrt
+pop dx
+
+; first root ;------------
+push dx
+push -1
+mul ; -sqrt (d)
+
+push bx
+push -1
+mul ; -b
+
+add ; -sqrt (d) -b
+
+push ax
+push 2
+mul ; 2a
+
+div ; (-sqrt (d) -b) / 2a
+out
+
+; second root ;------------
+push dx
+
+push bx
+push -1
+mul ; -b
+
+add ; sqrt (d) -b
+
+push ax
+push 2
+mul ; 2a
+
+div ; (-sqrt (d) -b) / 2a
+out
+
+jmp :start
+
+
+
 
