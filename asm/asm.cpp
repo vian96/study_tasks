@@ -100,10 +100,12 @@ int main (int argc, char *argv[]) {
 
     free_file_text (&code);
 
+#ifndef NDEBUG
     for (int i = 0; i < out_size; i++)
         printf ("%d ", out[i]);
     
     printf ("\n");
+#endif // debug
 
     FILE *f_out = fopen_err (out_name, "wb");
     if (!f_out)

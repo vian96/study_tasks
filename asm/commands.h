@@ -5,16 +5,11 @@
 #include <ctype.h>
 
 const int ASM_SIGN = 'CABO';
-const  char ASM_VER[8] = "0.2.4";
+const  char ASM_VER[8] = "0.2.7";
 
 // TODO create constant for sizeof FileData
 const int CMD_SIZE = sizeof (char);
 const int ARG_SIZE = sizeof (int) + sizeof (char);
-
-struct FileData {
-    int signature;
-    long long version;
-};
 
 enum ArgType {
     ARG_INT      = 1,
@@ -23,6 +18,8 @@ enum ArgType {
     ARG_REG_RAM  = 4, // acces memory by address from reg
     ARG_LABEL    = 5
 }; 
+
+// TODO add checks for different 
 
 #define DEF_CMD_(num, name, args, code) CMD_##name = num,
 enum AsmCmd {

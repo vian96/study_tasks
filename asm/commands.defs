@@ -1,6 +1,8 @@
 
 // DEF_CMD_ (num, name, args, code)
 
+// TODO make numbers more clear
+
 DEF_CMD_ (1, PUSH, 1, {PUSH (ARG);})
 
 DEF_CMD_ (2, IN, 0, {PUSH (input_int ());})
