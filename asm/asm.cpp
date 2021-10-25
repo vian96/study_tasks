@@ -159,6 +159,7 @@ char *parse_commands (const FileText *code, size_t *out_size) {
 
     DEB ("Starting second run..\n");
 
+    // TODO check if program meets needed label or not
     // second run for jumps
     f_pos = create_out_arr (code, out);
 
