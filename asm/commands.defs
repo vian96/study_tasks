@@ -41,3 +41,11 @@ DEF_CMD_ (12, DIV, 0, {
     int a_ = POP; int b_ = POP; 
     PUSH (b_ / a_);
 })
+
+DEF_CMD_ (13, RET, 0, {JUMP (POP);})
+
+DEF_CMD_ (14, CALL, 1, {
+    PUSH (cpu.ip + ARG_SIZE); 
+    JUMP (ARG);
+})
+

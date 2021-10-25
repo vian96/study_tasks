@@ -6,14 +6,22 @@
 #include <stdio.h>
 #include <math.h>
 
-#include <conio.h>
-
+// TODO cmd args for debug mode, i am tired of recompiling...
 #define NDEBUG
 
 #ifndef NDEBUG
 
 #define DEB(...) printf (__VA_ARGS__);
-#define wait _getch();
+#define wait {                  \
+    int c = getchar ();         \
+    if (c != '\n') {            \
+        /* TODO cpu_dump        \
+        cpu_dump ();*/          \
+        clear_input_buffer ();  \
+    }                           \
+}
+
+#define wait ;
 
 #else // debug
 
@@ -102,12 +110,28 @@ int main (int argc, char *argv[]) {
 
     DEB ("Starting executing..\n");
     
-#define PUSH(val) {int val_ = (val); stack_push (&cpu.stack, &val_); DEB ("Pushed %d\n", val_);}
-#define POP (*(int*) stack_pop (&cpu.stack))
+#define PUSH(val) {                  \
+    int val__ = (val);               \
+    stack_push (&cpu.stack, &val__); \
+    DEB ("Pushed %d\n", val__);      \
+}
+
+// TODO function for POP, it is ugly with macro and doesn't work properly
+#define POP (                                                       \
+    cpu.stack.size > 0 ?                                            \
+    *(int*) stack_pop (&cpu.stack) :                                \
+    (printf ("Stack underflow, exiting CPU...\n"), cpu_dtor (), 0)  \
+)
+
 #define ARG (*get_arg (cpu.bin + cpu.ip))
+
 // TODO know why [num] doesn't work in this define
 // and solve problem with arg_size
-#define JUMP(pos) {int pos_ = (pos); cpu.ip = pos_ - ARG_SIZE; DEB ("Jumping to %d\n", pos_);}
+#define JUMP(pos) {                             \
+    int pos__ = (pos);                          \
+    cpu.ip = pos__ - ARG_SIZE * cmd_args[cmd];  \
+    DEB ("Jumping to %d\n", pos__);             \
+}
 
     while (cpu.ip < file_len) {
         DEB ("while..\n");
@@ -126,7 +150,8 @@ int main (int argc, char *argv[]) {
         break;                                  
 // end of define DEF_CMD_
 
-        switch (*(cpu.bin + cpu.ip)) {
+        int cmd = cpu.bin[cpu.ip];
+        switch (cmd) {
             
         #include "commands.defs"
 

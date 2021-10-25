@@ -7,6 +7,10 @@ void skip_not_blank (const char **str);
 
 void skip_alnum (const char **str);
 
+void skip_name (const char **str);
+
 void str_to_upper (char *str);
+
+bool is_in_name (int c);
 
 

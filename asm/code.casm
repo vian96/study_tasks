@@ -1,5 +1,24 @@
 ; program for calculating discriminant
 
+jmp :start
+
+
+:print_37 ; just some function for testing and debugging
+push 37
+out
+
+ret
+
+:print_withot_pop ; prints top value from stack without deleting it
+pop px      ; pointer to last ip
+pop ox      ; value
+push ox 
+out
+push ox
+push px
+
+ret 
+
 :start
 
 ; input
@@ -28,16 +47,15 @@ out
 
 push dx
 push 0
-
 je :zero
 
 push dx
 push 0
-
 ja :more
 
+; no roots
 push 0
-out  ; roots
+out
 jmp :start
 
 :zero ;----------------------------------
@@ -62,9 +80,9 @@ jmp :start
 push 2
 out  ; roots
 
-; fails here
 push dx
 sqrt
+call :print_withot_pop
 pop dx
 
 ; first root ;------------

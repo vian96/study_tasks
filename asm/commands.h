@@ -5,7 +5,7 @@
 #include <ctype.h>
 
 const int ASM_SIGN = 'CABO';
-const  char ASM_VER[8] = "0.2.7";
+const  char ASM_VER[8] = "0.3.0";
 
 // TODO create constant for sizeof FileData
 const int CMD_SIZE = sizeof (char);

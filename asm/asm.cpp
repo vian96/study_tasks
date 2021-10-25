@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <string.h>
 
+// TODO cmd args for debug mode, i am tired of recompiling...
 #define NDEBUG
 
 #ifndef NDEBUG
@@ -33,7 +34,7 @@ void set_arg (const char **str, char *out);
 
 char get_type_arg (const char *str);
 
-const int LABEL_LEN = 20;
+const int LABEL_LEN = 30;
 const int LABEL_NUM = 100;
 
 struct Label {
@@ -186,7 +187,7 @@ size_t get_out_size (const FileText *code) {
             // label
             str++; // skips ':'
 
-            skip_alnum (&str);
+            skip_name (&str);
             skip_blank (&str);
             
             if (*str) {
@@ -265,7 +266,7 @@ size_t create_out_arr (const FileText *code, char *out) {
         f_pos += CMD_SIZE;
         
         // skips name of func
-        skip_not_blank (&str);
+        skip_alnum (&str);
 
         int cnt = 0;
         
@@ -307,6 +308,7 @@ void set_arg (const char **str, char *out) {
     skip_blank (str);
 
     // TODO functions get_reg, get_int, set_int and so on
+    // TODO maybe use some mactos to reduce code?
     switch (get_type_arg (*str)) {
     case ARG_INT: {
         int res = 0;
@@ -461,7 +463,7 @@ Label *get_label (const char *str) {
     static Label labels[LABEL_NUM] = {};
 
     char name[LABEL_LEN] = {0}; // {0} for compatability with C
-    for (int i = 0; i < LABEL_LEN && str[i] && isalnum (str[i]); i++) 
+    for (int i = 0; i < LABEL_LEN && str[i] && is_in_name (str[i]); i++) 
         name[i] = str[i];
     
     if (name[19]) {

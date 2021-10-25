@@ -35,6 +35,14 @@ void skip_alnum (const char **str) {
         (*str)++;
 }
 
+void skip_name (const char **str) {
+    assert (str);
+    assert (*str);
+
+    while (**str && is_in_name(**str))
+        (*str)++;
+}
+
 void str_to_upper (char *str) {
     assert (str);
 
@@ -42,6 +50,10 @@ void str_to_upper (char *str) {
         *str = toupper (*str);
         str++;
     }
+}
+
+bool is_in_name (int c) {
+    return isalnum (c) || c == '_';
 }
 
 
