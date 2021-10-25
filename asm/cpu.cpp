@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <math.h>
 
+#include <windows.h>
+
 // TODO cmd args for debug mode, i am tired of recompiling...
 #define NDEBUG
 
@@ -31,7 +33,13 @@
 #endif // not debug
 
 const int NUM_REGS = 16;
-const int NUM_RAM = 128;
+const int NUM_RAM = 2048;
+
+const int PIXELS = 30;
+const int VID_RAM = NUM_RAM - PIXELS * PIXELS;
+
+const int RAM_DELAY = 100;
+const int VID_RAM_DELAY = 20;
 
 struct Cpu {
     const char *bin;
@@ -222,9 +230,17 @@ int *get_arg (const char *bin) {
         return cpu.regs + data;
 
     case ARG_RAM:
+        if (data < VID_RAM)
+            Sleep (RAM_DELAY);
+        else
+            Sleep (VID_RAM_DELAY);
         return cpu.ram + data;
 
     case ARG_REG_RAM:
+        if (cpu.regs[data] < VID_RAM)
+            Sleep (RAM_DELAY);
+        else
+            Sleep (VID_RAM_DELAY);
         return cpu.ram + cpu.regs[data];
     
     default:

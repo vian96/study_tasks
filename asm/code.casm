@@ -1,126 +1,52 @@
-; program for calculating discriminant
+; video memory test
+; it fills one of two bytes and prints all screen after completing every line
 
-jmp :start
-
-
-:print_37 ; just some function for testing and debugging
-push 37
-out
-
-ret
-
-:print_withot_pop ; prints top value from stack without deleting it
-pop px      ; pointer to last ip
-pop ox      ; value
-push ox 
-out
-push ox
-push px
-
-ret 
-
-:start
-
-; input
-in 
+push 0
 pop ax
-in
-pop bx
-in 
-pop cx
 
-; discriminant 
-push bx
-push bx
-mul ; b^2
-
-push -4
-push ax
-push cx
-mul
-mul ; -4ac
-
-add ; discriminant ------------
-pop dx 
-push dx
-out
-
-push dx
-push 0
-je :zero
-
-push dx
-push 0
-ja :more
-
-; no roots
-push 0
-out
-jmp :start
-
-:zero ;----------------------------------
 push 1
-out  ; root
+pop [1148]
 
-push -1
-push bx
-mul ; -b
-
-push 2
+:loop
 push ax
-mul ; 2a
+push 1
+add         ; increment
+pop ax
 
-div ; -b/2a
-out 
-jmp :start
-
-
-
-:more ;----------------------------------
-push 2
-out  ; roots
-
-push dx
-sqrt
-call :print_withot_pop
-pop dx
-
-; first root ;------------
-push dx
-push -1
-mul ; -sqrt (d)
-
-push bx
-push -1
-mul ; -b
-
-add ; -sqrt (d) -b
+push ax
+push 900    ; num of video bytes
+je :end
 
 push ax
 push 2
-mul ; 2a
+mod 
 
-div ; (-sqrt (d) -b) / 2a
+push 1
+je :loop
+
+push ax
+push 1148   ; begin of video bytes
+add
+pop bx      ; addr of video byte
+
+push 1
+pop [bx]
+
+push ax
+push 2      ; because 30 is beggining of the next line
+add
+push 30     
+mod 
+
+push 0
+jne :loop
+
+print 
+
+jmp :loop
+
+:end 
+
+push 373737
 out
-
-; second root ;------------
-push dx
-
-push bx
-push -1
-mul ; -b
-
-add ; sqrt (d) -b
-
-push ax
-push 2
-mul ; 2a
-
-div ; (-sqrt (d) -b) / 2a
-out
-
-jmp :start
-
-
-
 

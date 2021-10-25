@@ -49,3 +49,20 @@ DEF_CMD_ (14, CALL, 1, {
     JUMP (ARG);
 })
 
+DEF_CMD_ (15, PRINT, 0, {
+    for (int y = 0; y < PIXELS; y++) {
+        for (int x = 0; x < PIXELS; x++)
+            putchar (cpu.ram[VID_RAM + y * PIXELS + x] ? '*' : '.');
+        putchar ('\n');
+    }
+})
+
+// deeper % higher
+DEF_CMD_ (16, MOD, 0, {
+    int a_ = POP; int b_ = POP; 
+    PUSH (b_ % a_);
+})
+
+DEF_CMD_ (17, JNE, 1, {if (POP != POP) JUMP (ARG);})
+
+

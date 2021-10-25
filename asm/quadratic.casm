@@ -1,0 +1,126 @@
+; program for calculating discriminant
+
+jmp :start
+
+
+:print_37 ; just some function for testing and debugging
+push 37
+out
+
+ret
+
+:print_withot_pop ; prints top value from stack without deleting it
+pop px      ; pointer to last ip
+pop ox      ; value
+push ox 
+out
+push ox
+push px
+
+ret 
+
+:start
+
+; input
+in 
+pop ax
+in
+pop bx
+in 
+pop cx
+
+; discriminant 
+push bx
+push bx
+mul ; b^2
+
+push -4
+push ax
+push cx
+mul
+mul ; -4ac
+
+add ; discriminant ------------
+pop dx 
+push dx
+out
+
+push dx
+push 0
+je :zero
+
+push dx
+push 0
+ja :more
+
+; no roots
+push 0
+out
+jmp :start
+
+:zero ;----------------------------------
+push 1
+out  ; root
+
+push -1
+push bx
+mul ; -b
+
+push 2
+push ax
+mul ; 2a
+
+div ; -b/2a
+out 
+jmp :start
+
+
+
+:more ;----------------------------------
+push 2
+out  ; roots
+
+push dx
+sqrt
+call :print_withot_pop
+pop dx
+
+; first root ;------------
+push dx
+push -1
+mul ; -sqrt (d)
+
+push bx
+push -1
+mul ; -b
+
+add ; -sqrt (d) -b
+
+push ax
+push 2
+mul ; 2a
+
+div ; (-sqrt (d) -b) / 2a
+out
+
+; second root ;------------
+push dx
+
+push bx
+push -1
+mul ; -b
+
+add ; sqrt (d) -b
+
+push ax
+push 2
+mul ; 2a
+
+div ; (-sqrt (d) -b) / 2a
+out
+
+jmp :start
+
+
+
+
