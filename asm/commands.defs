@@ -50,11 +50,19 @@ DEF_CMD_ (14, CALL, 1, {
 })
 
 DEF_CMD_ (15, PRINT, 0, {
-    for (int y = 0; y < PIXELS; y++) {
-        for (int x = 0; x < PIXELS; x++)
-            putchar (cpu.ram[VID_RAM + y * PIXELS + x] ? '*' : '.');
-        putchar ('\n');
+    char buffer__[PIXEL_X * PIXEL_Y + 100 + 20] = {};
+    int cnt = 0;
+
+    for (int y = 0; y < PIXEL_Y; y++) {
+        for (int x = 0; x < PIXEL_X; x++)
+            buffer__[cnt++] = cpu.ram[VID_RAM + y * PIXEL_X + x] ? '*' : ' ';
+        buffer__[cnt++] = '\n';
     }
+
+    buffer__[cnt - 1] = '\0';
+    // txSetConsoleCursorPos (0, 0);
+    fputs (buffer__, stdout);
+    Sleep (60);
 })
 
 // deeper % higher

@@ -4,9 +4,6 @@
 push 0
 pop ax
 
-push 1
-pop [1148]
-
 :loop
 push ax
 push 1
@@ -14,18 +11,35 @@ add         ; increment
 pop ax
 
 push ax
-push 900    ; num of video bytes
-je :end
+push 841    ; num of video bytes
+je :end     ; if ax == max, exit program
 
 push ax
-push 2
-mod 
-
-push 1
+push 6
+mod
+push 0
 je :loop
 
 push ax
-push 1148   ; begin of video bytes
+push 3
+mod
+push 0
+
+je :prr
+
+push ax
+push 2
+mod
+push 0
+
+je :prr
+
+jmp :loop
+
+:prr
+
+push ax
+push 1207   ; begin of video bytes
 add
 pop bx      ; addr of video byte
 

@@ -4,12 +4,13 @@
 #include <string.h>
 #include <ctype.h>
 
-const int ASM_SIGN = 'CABO';
-const  char ASM_VER[8] = "0.3.2";
-
 // TODO create constant for sizeof FileData
+const int ASM_SIGN = 'CABO';
+const char ASM_VER[8] = "0.3.2";
+
 const int CMD_SIZE = sizeof (char);
-const int ARG_SIZE = sizeof (int) + sizeof (char);
+// TODO change name to size_arg(?) 
+const int ARG_SIZE = sizeof (int) + sizeof (char); 
 
 enum ArgType {
     ARG_INT      = 1,
@@ -45,6 +46,9 @@ const int cmd_args[NUM_CMD] = {
 };
 #undef DEF_CMD_
 
+
+
+// TODO add to different file
 bool is_equal_words (const char *a, const char *b) {
     while (*a == *b && !isblank(*a) && !isblank(*b) && *a && *b) {
         a++; 

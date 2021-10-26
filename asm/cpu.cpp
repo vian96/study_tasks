@@ -1,3 +1,5 @@
+//#include "E:/WindowsFolders/Desktop/TX/TXLib.h"
+
 #include "commands.h"
 
 #include "../onegin/file_utils.h"
@@ -33,13 +35,14 @@
 #endif // not debug
 
 const int NUM_REGS = 16;
-const int NUM_RAM = 2048;
 
-const int PIXELS = 30;
-const int VID_RAM = NUM_RAM - PIXELS * PIXELS;
+const int PIXEL_X = 101;
+const int PIXEL_Y = 29;
+const int VID_RAM = 2000;
+const int NUM_RAM = VID_RAM + PIXEL_X * PIXEL_Y + 10;
 
-const int RAM_DELAY = 100;
-const int VID_RAM_DELAY = 20;
+const int RAM_DELAY = 0;
+const int VID_RAM_DELAY = 0;
 
 struct Cpu {
     const char *bin;
@@ -51,7 +54,7 @@ struct Cpu {
 };
 
 // TODO should i have it global?
-Cpu cpu = {};
+static Cpu cpu = {};
 
 void cpu_ctor ();
 
@@ -89,6 +92,8 @@ int main (int argc, char *argv[]) {
         return 0;
     } 
 
+    DEB ("Reading file...\n");
+
     FILE *f_in = fopen_err (in_name, "rb");
     if (!f_in)
         return 0;
@@ -117,6 +122,8 @@ int main (int argc, char *argv[]) {
     cpu.ip += sizeof (ASM_VER) + sizeof (ASM_SIGN);
 
     DEB ("Starting executing..\n");
+
+    printf ("Length of file: %d\n", file_len);
     
 #define PUSH(val) {                  \
     int val__ = (val);               \
@@ -189,7 +196,8 @@ int main (int argc, char *argv[]) {
 void cpu_ctor () {
     cpu.bin = nullptr;
     cpu.ip = 0;
-    
+
+    // TODO memset
     for (int i = 0; i < NUM_REGS; i++)
         cpu.regs[i] = 0;
     
@@ -224,11 +232,13 @@ int *get_arg (const char *bin) {
 
     switch (type) {
     case ARG_INT:
+        // TODO is it safe?
         return (int*) bin;
     
     case ARG_REG:
         return cpu.regs + data;
 
+    // TODO check boundaries of ram
     case ARG_RAM:
         if (data < VID_RAM)
             Sleep (RAM_DELAY);
@@ -278,7 +288,7 @@ uint64_t reverse_bytes (uint64_t bytes) {
 void clear_input_buffer () {
     // clears input buffer until the end of line
 
-    while (getchar () != '\n') { ; }
+    while (getchar () != '\n') { ;; }
 }
 
 bool check_file_data (const char *bin) {
@@ -286,7 +296,7 @@ bool check_file_data (const char *bin) {
     char asm_ver[8] = "";
 
     memcpy (&asm_sign, bin, sizeof (asm_sign));
-    memcpy (&asm_ver, bin + sizeof (asm_sign), sizeof (asm_ver));
+    memcpy (asm_ver, bin + sizeof (asm_sign), sizeof (asm_ver));
     
 
     if (asm_sign != ASM_SIGN) {

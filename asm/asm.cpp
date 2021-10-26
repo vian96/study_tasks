@@ -129,6 +129,7 @@ int main (int argc, char *argv[]) {
 char *create_out_name (const char *in_name) {
     size_t name_len = strlen (in_name);
 
+    // TODO add strdup
     char *out_name = (char*) calloc (name_len + 1, sizeof (char)); 
     strcpy (out_name, in_name);
     
@@ -152,12 +153,13 @@ char *parse_commands (const FileText *code, size_t *out_size) {
     if (!*out_size)
         return nullptr;
 
-    char *out = (char*) calloc (*out_size, 1);
+    char *out = (char*) calloc (*out_size, sizeof (char));
     
     size_t f_pos = create_out_arr (code, out);
 
     assert (f_pos == *out_size);
 
+    // TODO remove second run if it is not needed
     DEB ("Starting second run..\n");
 
     // TODO check if program meets needed label or not
@@ -395,6 +397,7 @@ char get_type_arg (const char *str) {
     if (sscanf (str, "%d", &res)) 
         return ARG_INT;
     
+    // TODO check if str[0] is a letter
     if (str[1] == 'X' && (isspace (str[2]) || !str[2]))
         return ARG_REG;
 
@@ -462,11 +465,11 @@ Label *get_label (const char *str) {
     // TODO is it ok to have it static?
     static Label labels[LABEL_NUM] = {};
 
-    char name[LABEL_LEN] = {0}; // {0} for compatability with C
+    char name[LABEL_LEN] = {}; 
     for (int i = 0; i < LABEL_LEN && str[i] && is_in_name (str[i]); i++) 
         name[i] = str[i];
     
-    if (name[19]) {
+    if (name[LABEL_LEN - 1]) {
         printf ("Syntax error: label name is too long, max is %d\n", LABEL_LEN);
         return nullptr;
     }
