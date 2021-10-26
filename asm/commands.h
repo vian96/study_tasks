@@ -6,7 +6,7 @@
 
 // TODO create constant for sizeof FileData
 const int ASM_SIGN = 'CABO';
-const char ASM_VER[8] = "0.3.2";
+const char ASM_VER[8] = "0.3.3";
 
 const int CMD_SIZE = sizeof (char);
 // TODO change name to size_arg(?) 

@@ -50,7 +50,7 @@ DEF_CMD_ (14, CALL, 1, {
 })
 
 DEF_CMD_ (15, PRINT, 0, {
-    char buffer__[PIXEL_X * PIXEL_Y + 100 + 20] = {};
+    char buffer__[PIXEL_X * PIXEL_Y + 100] = {};
     int cnt = 0;
 
     for (int y = 0; y < PIXEL_Y; y++) {
@@ -60,7 +60,6 @@ DEF_CMD_ (15, PRINT, 0, {
     }
 
     buffer__[cnt - 1] = '\0';
-    // txSetConsoleCursorPos (0, 0);
     fputs (buffer__, stdout);
     Sleep (60);
 })
