@@ -6,7 +6,7 @@ FILE *fopen_err (const char *name, const char *mode) {
     
     FILE *file = fopen (name, mode);
     
-    if (ferror (file)) {
+    if (!file || ferror (file)) {
         printf ("ERROR: opening file \"%s\" failed!\n", name);
         return NULL;
     }

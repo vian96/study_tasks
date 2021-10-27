@@ -11,18 +11,6 @@
 #include <stdio.h>
 #include <math.h>
 
-void execute_cpu (Cpu *cpu);
-
-int *get_arg (const char *bin, Cpu *cpu);
-
-void clear_input_buffer ();
-
-int input_int ();
-
-bool check_file_data (const char *bin);
-
-int *safe_pop (Cpu *cpu);
-
 int main (int argc, char *argv[]) {
     if (argc != 2) {
         printf (

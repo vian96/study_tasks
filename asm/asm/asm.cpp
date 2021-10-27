@@ -1,3 +1,5 @@
+#include "asm.h"
+
 #include "../config.h"
 
 #include "../commands.h"
@@ -5,24 +7,11 @@
 #include "labels.h"
 #include "asm_args.h"
 
-#include "../../onegin/file_utils.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <assert.h>
 #include <string.h>
-
-// TODO should i move to another header?
-void prepare_file_text (FileText *code);
-
-char *create_out_name (const char *in_name);
-
-char *parse_commands (const FileText *code, size_t *out_size);
-
-size_t get_out_size (const FileText *code);
-
-size_t create_out_arr (const FileText *code, char *out);
 
 int main (int argc, char *argv[]) {
     if (argc != 2) {
@@ -78,6 +67,8 @@ int main (int argc, char *argv[]) {
     printf("\nDONE\n");
     return 0;
 }
+
+// TODO is it okay to have implementations here ?
 
 char *create_out_name (const char *in_name) {
     size_t name_len = strlen (in_name);
