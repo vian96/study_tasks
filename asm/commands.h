@@ -1,11 +1,11 @@
 #ifndef ASM_COMMANDS_H
 #define ASM_COMMANDS_H
 
-// TODO create constant for sizeof FileData
 const int ASM_SIGN = 'CABO';
 const char ASM_VER[8] = "0.3.3";
+const int FILE_DATA_SIZE = sizeof (ASM_SIGN) + sizeof (ASM_VER);
 
-const int CMD_SIZE = sizeof (char);
+const int SIZE_CMD = sizeof (char);
 
 #define DEF_CMD_(num, name, args, code) CMD_##name = num,
 enum AsmCmd {

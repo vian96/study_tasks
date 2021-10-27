@@ -1,7 +1,7 @@
 
 // DEF_CMD_ (num, name, args, code)
 
-// TODO make numbers more clear
+// TODO make numbers more clear ?
 
 DEF_CMD_ (1, PUSH, 1, {PUSH (ARG);})
 
@@ -45,7 +45,7 @@ DEF_CMD_ (12, DIV, 0, {
 DEF_CMD_ (13, RET, 0, {JUMP (POP);})
 
 DEF_CMD_ (14, CALL, 1, {
-    PUSH (cpu->ip + ARG_SIZE); 
+    PUSH (cpu->ip + SIZE_ARG); 
     JUMP (ARG);
 })
 

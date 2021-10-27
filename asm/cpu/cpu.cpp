@@ -69,7 +69,7 @@ int main (int argc, char *argv[]) {
         return 0;
     }
 
-    cpu.ip += sizeof (ASM_VER) + sizeof (ASM_SIGN);
+    cpu.ip += FILE_DATA_SIZE;
     DEB ("Starting executing..\n");
     execute_cpu (&cpu);
 
@@ -84,12 +84,8 @@ void cpu_ctor (Cpu *cpu) {
     cpu->ip = 0;
     cpu->len = 0;
 
-    // TODO memset
-    for (int i = 0; i < NUM_REGS; i++)
-        cpu->regs[i] = 0;
-    
-    for (int i = 0; i < NUM_RAM; i++)
-        cpu->ram[i] = 0;
+    memset (cpu->regs, 0, NUM_REGS * sizeof (*cpu->regs));
+    memset (cpu->ram, 0, NUM_RAM * sizeof (*cpu->ram));
 
     cpu->stack = {};
     stack_ctor (&cpu->stack, 0, sizeof (int));
@@ -153,10 +149,19 @@ int *get_arg (const char *bin, Cpu *cpu) {
         return (int*) bin;
     
     case ARG_REG:
+        if (data < 0 || data > NUM_REGS) {
+            printf ("Wrong reg number, trying to access %d, regs count is %d, exiting cpu\n", data, NUM_RAM);
+            return nullptr;
+        }
+
         return cpu->regs + data;
 
-    // TODO check boundaries of ram
     case ARG_RAM:
+        if (data < 0 || data >= NUM_RAM) {
+            printf ("Out of boundaries of ram, trying to access %d, ram size is %d, exiting cpu\n", data, NUM_RAM);
+            return nullptr;
+        }
+
         if (data < VID_RAM)
             Sleep (RAM_DELAY);
         else
@@ -164,6 +169,16 @@ int *get_arg (const char *bin, Cpu *cpu) {
         return cpu->ram + data;
 
     case ARG_REG_RAM:
+        if (data < 0 || data > NUM_REGS) {
+            printf ("Wrong reg number, trying to access %d, regs count is %d, exiting cpu\n", data, NUM_RAM);
+            return nullptr;
+        }
+
+        if (cpu->regs[data] < 0 || cpu->regs[data] >= NUM_RAM) {
+            printf ("Out of boundaries of ram, trying to access %d, ram size is %d, exiting cpu\n", data, NUM_RAM);
+            return nullptr;
+        }
+
         if (cpu->regs[data] < VID_RAM)
             Sleep (RAM_DELAY);
         else

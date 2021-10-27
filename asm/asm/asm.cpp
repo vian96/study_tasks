@@ -188,7 +188,7 @@ size_t get_out_size (const FileText *code) {
             return 0;
         }
 
-        out_size += CMD_SIZE + ARG_SIZE * cmd_args[cmd];
+        out_size += SIZE_CMD + SIZE_ARG * cmd_args[cmd];
     }
 
     return out_size;
@@ -211,7 +211,7 @@ size_t create_out_arr (const FileText *code, char *out) {
 
         if (str[0] == ':') {
             // label
-            if (set_label_val (str + 1, f_pos + sizeof (ASM_VER) + sizeof (ASM_SIGN)) == -1) {
+            if (set_label_val (str + 1, f_pos + FILE_DATA_SIZE) == -1) {
                 printf ("Error at line trying to set label value:\n%s\n", str);
                 return 0;
             }
@@ -222,7 +222,7 @@ size_t create_out_arr (const FileText *code, char *out) {
         AsmCmd cmd = get_cmd (str);
 
         out[f_pos] = cmd;
-        f_pos += CMD_SIZE;
+        f_pos += SIZE_CMD;
         
         // skips name of func
         skip_alnum (&str);
@@ -231,7 +231,7 @@ size_t create_out_arr (const FileText *code, char *out) {
         
         while (cnt++ < cmd_args[cmd]) { 
             set_arg (&str, out + f_pos);
-            f_pos += ARG_SIZE;
+            f_pos += SIZE_ARG;
         }
     }
 

@@ -1,7 +1,7 @@
 #ifndef ASM_ARGS_H
 #define ASM_ARGS_H
 
-const int ARG_SIZE = sizeof (int) + sizeof (char); 
+const int SIZE_ARG = sizeof (int) + sizeof (char); 
 
 enum ArgType {
     ARG_INT      = 1,
