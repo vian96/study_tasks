@@ -1,0 +1,66 @@
+; video memory test
+; it fills one of two bytes and prints all screen after completing every line
+
+push 0
+pop ax
+
+:loop
+push ax
+push 1
+add         ; increment
+pop ax
+
+push ax
+push 841    ; num of video bytes
+je :end     ; if ax == max, exit program
+
+push ax
+push 6
+mod
+push 0
+je :loop
+
+push ax
+push 3
+mod
+push 0
+
+je :prr
+
+push ax
+push 2
+mod
+push 0
+
+je :prr
+
+jmp :loop
+
+:prr
+
+push ax
+push 1207   ; begin of video bytes
+add
+pop bx      ; addr of video byte
+
+push 1
+pop [bx]
+
+push ax
+push 2      ; because 30 is beggining of the next line
+add
+push 30     
+mod 
+
+push 0
+jne :loop
+
+print 
+
+jmp :loop
+
+:end 
+
+push 373737
+out
+

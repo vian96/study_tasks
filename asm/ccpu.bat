@@ -1,0 +1,1 @@
+g++ -Wall -Wextra -Wpedantic -Wformat=0 -Wno-sign-compare "../onegin/file_utils.cpp" "../stack/source/stack.cpp" "cpu/cpu.cpp" -o "cpu/cpu" %*

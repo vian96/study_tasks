@@ -21,20 +21,68 @@ int main () {
     for (int frame = 0; frame < NUM_FRAMES; frame++) {
         fread (buffer, 1, FRAME_LEN, f_in);
 
-        for (int i = 0; i <= FRAME_LEN; i++)
+        int last = -1;
+        int row = 0;
+
+        for (int i = 0; i <= FRAME_LEN; i++) {
+            int t = !isspace (buffer[i]);
+
+            if (t == last) {
+                row++;
+            }
+            else {
+                if (last != -1)
+                    fprintf (
+                        f_out, "push %d\npush %d\nmemset %d\n", 
+                        BEGIN_VID + i - row, BEGIN_VID + i, !t
+                    );
+                last = t;
+                row = 1;
+            }
+        }
+
+        if (last != -1)
+            fprintf (
+                f_out, "push %d\npush %d\nmemset %d\n", 
+                BEGIN_VID + FRAME_LEN - row, BEGIN_VID + FRAME_LEN, !buffer[FRAME_LEN]
+            );
+
+        /*for (int i = 0; i <= FRAME_LEN; i++)
             if (!isspace (buffer[i])) 
                 buffer[i] = 1;
             else 
                 buffer[i] = 0;
 
+        int last = -1;
+        int row = 0;
+
         for (int i = 0; i <= FRAME_LEN; i++) {
             int diff = buffer[i] - prev[i];
 
-            if (diff == 1) 
-                fprintf (f_out, "push 1\npop [%d]\n", BEGIN_VID + i);
-            else if (diff == -1)
-                fprintf (f_out, "push 0\npop [%d]\n", BEGIN_VID + i);
-        }
+            if (diff) {
+                if (last == buffer[i]) {
+                    row++;
+                }
+                else {
+                    if (last != -1)
+                        fprintf (
+                            f_out, "push %d\npush %d\nmemset %d\n", 
+                            BEGIN_VID + i - row, BEGIN_VID + i, !buffer[i]
+                        );
+                    last = buffer[i];
+                    row = 1;
+                }
+            }
+            else {
+                if (last != -1)
+                    fprintf (
+                        f_out, "push %d\npush %d\nmemset %d\n", 
+                        BEGIN_VID + i - row, BEGIN_VID + i, !buffer[i - 1]
+                    );
+                row = 0;
+                last = -1;
+            }
+        }*/
 
         // swap
         prev = (char*) ((size_t) prev ^ (size_t) buffer);

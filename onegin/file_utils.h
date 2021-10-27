@@ -1,3 +1,6 @@
+#ifndef ONEGIN_FILE_UTILS_H
+#define ONEGIN_FILE_UTILS_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -46,3 +49,5 @@ void fprint_string_ref (StringRef *strings, int len,
                             
 // checks if str has alphanum characters
 int has_alnum_SR (const StringRef str);
+
+#endif // ONEGIN_FILE_UTILS_H

@@ -1,0 +1,1 @@
+g++ -Wall -Wextra -Wpedantic -Wformat=0 -Wno-sign-compare "../onegin/file_utils.cpp" "asm/string_utils.cpp" "asm/labels.cpp" "asm/asm_args.cpp" "asm/asm.cpp" -o "asm/asm" %*

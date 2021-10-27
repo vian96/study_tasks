@@ -45,7 +45,7 @@ DEF_CMD_ (12, DIV, 0, {
 DEF_CMD_ (13, RET, 0, {JUMP (POP);})
 
 DEF_CMD_ (14, CALL, 1, {
-    PUSH (cpu.ip + ARG_SIZE); 
+    PUSH (cpu->ip + ARG_SIZE); 
     JUMP (ARG);
 })
 
@@ -55,11 +55,11 @@ DEF_CMD_ (15, PRINT, 0, {
 
     for (int y = 0; y < PIXEL_Y; y++) {
         for (int x = 0; x < PIXEL_X; x++)
-            buffer__[cnt++] = cpu.ram[VID_RAM + y * PIXEL_X + x] ? '*' : ' ';
+            buffer__[cnt++] = cpu->ram[VID_RAM + y * PIXEL_X + x] ? '*' : ' ';
         buffer__[cnt++] = '\n';
     }
 
-    buffer__[cnt - 1] = '\0';
+    buffer__[cnt - 1] = '\0'; // TODO why cnt-1?
     fputs (buffer__, stdout);
     Sleep (60);
 })
@@ -72,4 +72,17 @@ DEF_CMD_ (16, MOD, 0, {
 
 DEF_CMD_ (17, JNE, 1, {if (POP != POP) JUMP (ARG);})
 
+DEF_CMD_ (18, MEMSET, 1, {
+    int right__ = POP;
+    int left__ = POP;
+    int val__ = ARG;
+    
+    if (left__ < 0 || right__ <= left__) {
+        printf ("Wrong args %d and %d of MEMSET at pos %d", left__, right__, cpu->ip);
+        break;
+    }
+
+    for (int i = left__; i < right__; i++) 
+        cpu->ram[i] = val__;
+})
 

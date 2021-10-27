@@ -1,3 +1,6 @@
+#ifndef ONEGIN_ONEGIN_H
+#define ONEGIN_ONEGIN_H
+
 #include "onegin.h"
 
 int cmp_first_alnum_SR (const void *a, const void *b) {
@@ -65,4 +68,6 @@ int cmp_rhyme_SR (const void* a, const void* b) {
 
     return 0;
 }
+
+#endif // ONEGIN_ONEGIN_H
 
