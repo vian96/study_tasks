@@ -1,0 +1,38 @@
+; program for calculating factorial
+
+jmp :start
+
+:factorial
+pop px
+pop fx
+push fx ; n
+push 1
+je :n_1
+
+push px
+push fx ; n
+push fx
+push -1
+add     ; n - 1
+
+call :factorial     ; (n-1)!
+mul
+
+pop fx  ; n!
+pop px
+push fx
+push px
+
+ret
+
+:n_1
+push 1
+push px
+ret
+
+:start
+
+in 
+call :factorial
+
+out
