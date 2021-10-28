@@ -94,3 +94,5 @@ DEF_CMD_ (18, MEMSET, 1, {
         cpu->ram[i] = val__;
 })
 
+DEF_CMD_ (19, DUMP, 1, {cpu_dump (stdout, cpu, ARG);})
+

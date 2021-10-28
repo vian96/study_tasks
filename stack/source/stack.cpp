@@ -56,7 +56,7 @@ DumpMode add_modes (size_t num, ...) {
     return res;
 }
 
-DumpMode match_dump_mode(DumpMode mode, DumpMode match) {
+DumpMode match_dump_mode (DumpMode mode, DumpMode match) {
     return (DumpMode) ((int) (mode) & (int) (match));
 }
 

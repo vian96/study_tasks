@@ -95,6 +95,92 @@ void cpu_dtor (Cpu *cpu) {
     stack_dtor (&cpu->stack);
 }
 
+void cpu_dump (FILE *f_out, Cpu *cpu, bool is_ram) {
+    assert (f_out);
+
+    if (ferror (f_out)) 
+        return;
+
+    fprintf (f_out, "\n-------------CPU DUMP---------------\n");
+
+    if (!cpu) {
+        fprintf (
+            f_out,
+            "ERROR: CPU address is NULL!!!!!\n"
+            "--------------------------------------\n"
+        );
+
+        return;
+    }
+
+    fprintf (f_out, "Address of cpu: %p\n", cpu);
+
+    fprintf (
+        f_out, 
+        "Address of binary code: %p\n"
+        "Len of binary code: %d\n"
+        "Current instruction pointer: %d\n"
+        "Address of regs: %p\n"
+        "Address of ram: %p\n",
+        cpu->bin, cpu->len, cpu->ip, cpu->regs, cpu->ram
+    );
+
+    stack_dump (&cpu->stack, f_out, MAX_DUMP);
+
+    if (is_ram)
+        ram_dump (f_out, cpu);
+    regs_dump (f_out, cpu);
+
+    fprintf (
+        f_out,
+        "\n\n---------END OF CPU DUMP------------\n\n"
+    );
+}
+
+void ram_dump (FILE *f_out, Cpu *cpu) {
+    assert (f_out);
+
+    if (ferror (f_out)) 
+        return;
+
+    fprintf (f_out, "\n------RAM dump------\n");
+    
+    const int LEN_SIZE = 25;
+
+    fprintf (f_out, "    ");
+    for (int x = 0; x < LEN_SIZE; x++)
+        fprintf (f_out, "%4d", x);
+    fputc ('\n', f_out);
+
+    for (int y = 0; y < (NUM_RAM - 1) / LEN_SIZE + 1; y++) {
+        fprintf (f_out, "%4d", y);
+        
+        for (int x = 0; x < LEN_SIZE && x + y * LEN_SIZE < NUM_RAM; x++)
+            fprintf (f_out, "%4d", cpu->ram[y * LEN_SIZE + x]);
+
+        fputc ('\n', f_out);
+    }
+    
+    fprintf (f_out, "\n------END of RAM dump------\n\n");
+}
+
+void regs_dump (FILE *f_out, Cpu *cpu) {
+    assert (f_out);
+
+    if (ferror (f_out)) 
+        return;
+
+    fprintf (f_out, "\n------REGS dump------\n");
+    
+    for (int x = 0; x < NUM_REGS; x++)
+        fprintf (f_out, "%4cx", 'a' + x);
+    fputc ('\n', f_out);
+
+    for (int x = 0; x < NUM_REGS; x++)
+        fprintf (f_out, "%5d", cpu->regs[x]);
+    fputc ('\n', f_out);
+}
+
 void execute_cpu (Cpu *cpu) {
     assert (cpu);
     assert (cpu->len);

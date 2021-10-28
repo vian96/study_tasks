@@ -1,6 +1,7 @@
 
-push 2000
-push 3500
-memset 1
-print
-
+push 2500
+pop ax
+dump 0
+push 1
+pop [ax]
+dump 0

@@ -29,6 +29,12 @@ void cpu_ctor (Cpu *cpu);
 
 void cpu_dtor (Cpu *cpu);
 
+void cpu_dump (FILE *f_out, Cpu *cpu, bool is_ram = 0);
+
+void ram_dump (FILE *f_out, Cpu *cpu);
+
+void regs_dump (FILE *f_out, Cpu *cpu);
+
 // TODO should i have this declarations here ?
 
 void execute_cpu (Cpu *cpu);
