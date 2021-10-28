@@ -1,0 +1,111 @@
+; program for printing circle on a screen
+
+jmp :start
+
+:put_x_y    ; puts 1 in video ram with coord x and y 
+pop px
+pop fx  ; y
+pop ex  ; x 
+push fx
+push mx
+mul
+push ex
+add
+push 2000 ; start of video ram
+add
+pop ox
+push 1
+pop [ox]
+
+push px
+ret
+
+:start
+
+push 101
+pop mx  ; x pixels
+
+push 30
+pop nx  ; y pixels
+
+push 50 
+pop ax  ; x center of the circle
+
+push 15
+pop bx  ; y center of the circle
+
+push 10
+pop cx  ; counter for x
+
+:loop
+
+push cx
+push -1
+je :end
+
+push cx
+push cx
+mul
+push -1
+mul
+push 100
+add
+sqrt    
+push 2  
+div     ; because height of symbols is more than it's width
+pop dx  ; sqrt(100-x^2) = y
+
+push dx 
+push cx
+out 
+out 
+
+push cx
+push ax 
+add
+push dx 
+push bx 
+add 
+call :put_x_y
+
+push cx
+push -1
+mul
+push ax 
+add
+push dx 
+push bx 
+add 
+call :put_x_y
+
+push cx
+push ax 
+add
+push dx 
+push -1
+mul
+push bx 
+add 
+call :put_x_y
+
+push cx
+push -1
+mul
+push ax 
+add
+push dx 
+push -1
+mul
+push bx 
+add 
+call :put_x_y
+
+push cx
+push -1
+add  
+pop cx 
+
+jmp :loop
+
+:end 
+print 
