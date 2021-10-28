@@ -1,126 +1,131 @@
-; program for calculating discriminant
+; program for solving quadratic equation
 
-jmp :start
-
-
-:print_37 ; just some function for testing and debugging
-push 37
-out
-
-ret
-
-:print_withot_pop ; prints top value from stack without deleting it
-pop px      ; pointer to last ip
-pop ox      ; value
-push ox 
-out
-push ox
-push px
-
-ret 
-
-:start
-
-; input
 in 
-pop ax
-in
-pop bx
+pop ax 
+in 
+pop bx 
 in 
 pop cx
 
-; discriminant 
+push ax
+push 0
+je :linear
+
+; calculating discriminant
 push bx
 push bx
-mul ; b^2
+mul     ; b^2
 
 push -4
 push ax
 push cx
 mul
-mul ; -4ac
+mul     ; -4ac
 
-add ; discriminant ------------
-pop dx 
+add
+pop dx  ; discriminant
+
 push dx
 out
 
 push dx
 push 0
-je :zero
+ja :two_roots
 
 push dx
 push 0
-ja :more
+je :one_root
 
-; no roots
+; no_roots
 push 0
-out
-jmp :start
-
-:zero ;----------------------------------
-push 1
-out  ; root
-
-push -1
-push bx
-mul ; -b
-
-push 2
-push ax
-mul ; 2a
-
-div ; -b/2a
 out 
-jmp :start
 
+jmp :exit
 
+:one_root
+push 1
+out
 
-:more ;----------------------------------
+push bx
+push ax
+push -2
+mul
+div     ; b/(-2a)
+
+out
+
+jmp :exit
+
+:two_roots
 push 2
-out  ; roots
+out 
 
 push dx
 sqrt
-call :print_withot_pop
 pop dx
 
-; first root ;------------
-push dx
-push -1
-mul ; -sqrt (d)
+push ax
+push 2
+mul
+pop ax
 
 push bx
 push -1
-mul ; -b
+mul 
+pop bx
 
-add ; -sqrt (d) -b
-
-push ax
-push 2
-mul ; 2a
-
-div ; (-sqrt (d) -b) / 2a
-out
-
-; second root ;------------
 push dx
+push -1
+mul
 
 push bx
-push -1
-mul ; -b
-
-add ; sqrt (d) -b
+add     ; -sqrt(d) - b
 
 push ax
-push 2
-mul ; 2a
+div
+out     ; smaller root (if a > 0)
 
-div ; (-sqrt (d) -b) / 2a
+push dx
+push bx
+add     ; sqrt(d) - b 
+
+push ax
+div
+out     ; bigger root (if a > 0)
+
+jmp :exit
+
+:linear
+push bx
+push 0
+je :constant
+
+push 1
 out
 
-jmp :start
+push cx
+push -1
+mul     ; -c 
 
+push bx
+div     ; -c/b 
+out
 
+jmp :exit
 
+:constant
+push cx
+push 0
+je :tautology
+
+push 0
+out
+
+jmp :exit
+
+:tautology
+push -1
+out
+
+:exit
 

@@ -199,12 +199,18 @@ int *safe_pop (Cpu *cpu) {
     DEB ("Poping\n");
 
     if (is_empty_stack (&cpu->stack)) {
-        printf ("Poping before initializing stack at pos %d, exiting cpu\n", cpu->ip);
+        printf (
+            "Poping before initializing stack at pos %d with cmd: %s, exiting cpu\n", 
+            cpu->ip, cmd_names[cpu->bin[cpu->ip - 1]]
+        );
         return nullptr;
     }
 
     if (!cpu->stack.size) {
-        printf ("Poping empty stack at pos %d, exiting cpu\n", cpu->ip);
+        printf (
+            "Poping empty stack at pos %d with cmd: %s, exiting cpu\n", 
+            cpu->ip, cmd_names[cpu->bin[cpu->ip - 1]]
+        );
         return nullptr;
     }
 

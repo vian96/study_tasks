@@ -34,11 +34,19 @@ DEF_CMD_ (10, JB, 1, {
         JUMP (ARG);
 })
 
-DEF_CMD_ (11, SQRT, 0, {PUSH (sqrt (POP));})
+DEF_CMD_ (11, SQRT, 0, {
+    int x_ = POP;
+    if (x_ < 0) 
+        printf ("ERROR: Calculating sqaure root from negative value, pushing nothing");
+    else
+        PUSH (sqrt (x_));
+})
 
 // deeper / higher
 DEF_CMD_ (12, DIV, 0, {
     int a_ = POP; int b_ = POP; 
+    if (a_ == 0)
+        printf ("ERROR: division by zero, pushing nothing\n");
     PUSH (b_ / a_);
 })
 
