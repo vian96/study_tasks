@@ -22,7 +22,7 @@ ret
 
 :start
 
-push 101
+push 100
 pop mx  ; x pixels
 
 push 30
