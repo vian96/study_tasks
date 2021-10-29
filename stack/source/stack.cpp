@@ -167,7 +167,8 @@ void stack_dtor (Stack *stack, RetErr *err) {
 #ifndef CANARY_DATA_PROTECTION
     free (stack->arr);
 #else // not CANARY_DATA_PROTECTION
-    free ((char*) stack->arr - sizeof (uint64_t));
+    if (stack->arr)
+        free ((char*) stack->arr - sizeof (uint64_t));
 #endif // CANARY_DATA_PROTECTION
 
     stack->arr = nullptr;

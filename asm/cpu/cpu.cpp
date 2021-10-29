@@ -86,11 +86,8 @@ void cpu_dtor (Cpu *cpu) {
     cpu->ip = 0;
     cpu->len = 0;
     
-    for (int i = 0; i < NUM_REGS; i++)
-        cpu->regs[i] = 0;
-
-    for (int i = 0; i < NUM_RAM; i++)
-        cpu->ram[i] = 0;
+    memset (cpu->regs, 0, sizeof (cpu->regs));
+    memset (cpu->ram, 0, sizeof (cpu->ram));
     
     stack_dtor (&cpu->stack);
 }

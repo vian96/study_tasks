@@ -2,7 +2,7 @@
 #define ASM_COMMANDS_H
 
 const int ASM_SIGN = 'CABO';
-const char ASM_VER[8] = "0.3.3";
+const char ASM_VER[8] = "0.3.5";
 const int FILE_DATA_SIZE = sizeof (ASM_SIGN) + sizeof (ASM_VER);
 
 const int SIZE_CMD = sizeof (char);

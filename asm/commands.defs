@@ -58,17 +58,17 @@ DEF_CMD_ (14, CALL, 1, {
 })
 
 DEF_CMD_ (15, PRINT, 0, {
-    char buffer__[PIXEL_X * PIXEL_Y + 100] = {};
-    int cnt = 0;
+    char buffer_[PIXEL_X * PIXEL_Y + 100] = {};
+    int cnt_ = 0;
 
-    for (int y = 0; y < PIXEL_Y; y++) {
-        for (int x = 0; x < PIXEL_X; x++)
-            buffer__[cnt++] = cpu->ram[VID_RAM + y * PIXEL_X + x] ? '*' : ' ';
-        buffer__[cnt++] = '\n';
+    for (int y_ = 0; y_ < PIXEL_Y; y_++) {
+        for (int x_ = 0; x_ < PIXEL_X; x_++)
+            buffer_[cnt_++] = cpu->ram[VID_RAM + y_ * PIXEL_X + x_] ? '*' : ' ';
+        buffer_[cnt_++] = '\n';
     }
 
-    buffer__[cnt - 1] = '\0'; // TODO why cnt-1?
-    fputs (buffer__, stdout);
+    buffer_[cnt_ - 1] = '\0'; // TODO why cnt_-1?
+    fputs (buffer_, stdout);
     Sleep (60);
 })
 
@@ -81,17 +81,17 @@ DEF_CMD_ (16, MOD, 0, {
 DEF_CMD_ (17, JNE, 1, {if (POP != POP) JUMP (ARG);})
 
 DEF_CMD_ (18, MEMSET, 1, {
-    int right__ = POP;
-    int left__ = POP;
-    int val__ = ARG;
+    int right_ = POP;
+    int left_ = POP;
+    int val_ = ARG;
     
-    if (left__ < 0 || right__ <= left__) {
-        printf ("Wrong args %d and %d of MEMSET at pos %d", left__, right__, cpu->ip);
+    if (left_ < 0 || right_ <= left_) {
+        printf ("Wrong args %d and %d of MEMSET at pos %d", left_, right_, cpu->ip);
         break;
     }
 
-    for (int i = left__; i < right__; i++) 
-        cpu->ram[i] = val__;
+    for (int i = left_; i < right_; i++) 
+        cpu->ram[i] = val_;
 })
 
 DEF_CMD_ (19, DUMP, 1, {cpu_dump (stdout, cpu, ARG);})
