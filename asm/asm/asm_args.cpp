@@ -56,7 +56,7 @@ void set_arg (const char **str, char *out) {
         out[0] = ARG_REG;
         out++;
 
-        set_int (out, (*str)[0] - 'A');
+        set_int (out, toupper ((*str)[0]) - 'A');
 
         break;
     
@@ -74,7 +74,7 @@ void set_arg (const char **str, char *out) {
         out[0] = ARG_REG_RAM;
         out++;
 
-        set_int (out, (*str)[1] - 'A');
+        set_int (out, toupper ((*str)[1]) - 'A');
 
         break;
 
@@ -109,7 +109,7 @@ int get_type_arg (const char *str) {
         return ARG_LABEL;
     }
     
-    if (isalpha (str[0]) && str[1] == 'X' && (isspace (str[2]) || !str[2] || str[2] == ']'))
+    if (isalpha (str[0]) && toupper (str[1]) == 'X' && (isspace (str[2]) || !str[2] || str[2] == ']'))
         return ARG_REG;
 
     if (sscanf (str, "%d", &res)) 

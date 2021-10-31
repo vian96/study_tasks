@@ -1,0 +1,87 @@
+; this program decodes rle data from end of file and prints it on screen
+
+#include :data apple.bin
+
+push 0
+pop fx      ; frame counter
+push 2181
+pop mx      ; max frame
+push 3000
+pop lx      ; frame len
+push 2000
+pop gx      ; begin of video memory
+
+push :data
+pop px      ; data pointer
+
+:frames 
+    ; checks if end of video
+    push fx 
+    push mx 
+    je :end
+
+    push fx 
+    push 1
+    add 
+    pop fx
+    
+    ; if not print then go to pixels
+    dataint px
+    push 0
+    jne :pixels
+    
+    ; skips print
+    push px
+    push 4
+    add 
+    pop px 
+    
+    print 
+    jmp :frames
+
+    :pixels
+
+        ; getting data for memset   ---------------------------
+        dataint px  ; begin of memset
+
+        push px
+        push 4
+        add
+        pop px
+
+        dataint px  ; end of memset
+
+        push px 
+        push 4
+        add 
+        pop px 
+
+        datachar px
+        pop ax      ; value of memset 
+
+        memset ax   ;        -----------------------------------
+
+        push px 
+        push 1
+        add 
+        pop px 
+
+        ; if begin of next memset is zero then next frame \
+        ; because all video ram adresses are greater than zero and zero means print
+        dataint px
+        push 0
+        jne :pixels
+        
+        ; skips print
+        push px
+        push 4
+        add 
+        pop px 
+
+        print
+        jmp :frames 
+
+:end 
+push 3737
+out 
+

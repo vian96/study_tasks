@@ -64,28 +64,24 @@ void prepare_file_text (FileText *code) {
         char *str = code->strings[line].begin;
         
         while (*str) {
-            // converts string to upper case
-            *str = toupper (*str);
-
             // removes comments
             if (*str == ';') {
                 *str = '\0';
                 break;
             }
-            
             str++;
         }
     }
 }
 
 bool is_equal_words (const char *a, const char *b) {
-    while (*a == *b && !isblank(*a) && !isblank(*b) && *a && *b) {
+    while (toupper(*a) == toupper(*b) && !isblank(*a) && !isblank(*b) && *a && *b) {
         a++; 
         b++;
     }
 
     // they're equal or one of them is '\0' the other one is ' '
-    if (*a == *b || (*a * *b == 0 && *a + *b == ' '))
+    if (toupper(*a) == toupper(*b) || (*a * *b == 0 && *a + *b == ' '))
         return 1;
 
     return 0;

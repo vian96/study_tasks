@@ -27,6 +27,7 @@ int main (int argc, char *argv[]) {
             "ERROR: wrong name of input file\n"
             "Input file should have name \"*name*.casm\" where len(name) > 0\n"
         );
+        return 0;
     }
 
     const char *in_name = argv[1];
@@ -48,12 +49,15 @@ int main (int argc, char *argv[]) {
     size_t out_size = 0;
     char *out = parse_commands (&code, &out_size);
 
+    DEB ("Freeing FileText\n");
     free_file_text (&code);
 
+    DEB ("Oppening out file\n");
     FILE *f_out = fopen_err (out_name, "wb");
     if (!f_out)
         return 0;
 
+    DEB ("Writing out file\n");
     fwrite (&ASM_SIGN, sizeof (ASM_SIGN), 1, f_out);
     fwrite (&ASM_VER, sizeof (ASM_VER), 1, f_out);
 
@@ -91,22 +95,25 @@ char *parse_commands (const FileText *code, size_t *out_size) {
    
     DEB ("Calculating out size...\n");
     *out_size = get_out_size (code);
+    DEB ("Calculated %d bytes, it may increase after #include directives\n", *out_size);
 
-    if (!*out_size)
+    if (!*out_size) {
+        printf ("Calculated 0 size of binary (probably there is some error or empty asm file, exiting\n");
         return nullptr;
+    }
 
     char *out = (char*) calloc (*out_size, sizeof (char));
     
     DEB ("Starting the first run...\n");
-    size_t f_pos = create_out_arr (code, out);
-    assert (f_pos == *out_size);
+    size_t f_pos = create_out_arr (code, &out, out_size, 0);
+    DEB ("The first run creted %d bytes\n", f_pos);
 
     // TODO remove second run if it is not needed (e.g. no exmpty labels)
     
     // second run for jumps
     DEB ("Starting the second run..\n");
-    f_pos = create_out_arr (code, out);
-    assert (f_pos == *out_size);
+    f_pos = create_out_arr (code, &out, out_size, 1);
+    DEB ("The second run creted %d bytes\n", f_pos);
 
     return out;
 }
@@ -119,6 +126,7 @@ AsmCmd get_cmd (const char *str) {
     return (AsmCmd) -1;
 }
 
+// TODO now i need to copypaste code, solve this!!
 size_t get_out_size (const FileText *code) {
     assert (code);
     assert (code->strings);
@@ -132,6 +140,9 @@ size_t get_out_size (const FileText *code) {
             continue;
                 
         skip_blank (&str);
+
+        if (str[0] == '#')
+            continue;
         
         if (str[0] == ':') {
             // label
@@ -185,10 +196,11 @@ size_t get_out_size (const FileText *code) {
     return out_size;
 }
 
-size_t create_out_arr (const FileText *code, char *out) {
+size_t create_out_arr (const FileText *code, char **out, size_t *bin_size, int num_run) {
     assert (code);
     assert (code->strings);
     assert (out);
+    assert (bin_size);
 
     size_t f_pos = 0;
 
@@ -200,10 +212,29 @@ size_t create_out_arr (const FileText *code, char *out) {
         
         skip_blank (&str);
 
+        if (str[0] == '#') {
+            str++;
+            printf ("Met directive %s\n", str);
+            // directive of asm
+            if (is_equal_words (str, "include")) {
+                if (num_run != 0) {
+                    printf ("This is not the first run, so skipping...\n");
+                    continue;
+                }
+                
+                if (add_include (str, out, bin_size) == 0) {
+                    printf ("ERROR at parsing directive include at line:\n%s\n", str);
+                    return 0;
+                }
+            }
+            
+            continue;
+        }
+
         if (str[0] == ':') {
             // label
             if (set_label_val (str + 1, f_pos + FILE_DATA_SIZE) == -1) {
-                printf ("Error at line trying to set label value:\n%s\n", str);
+                printf ("ERROR at line trying to set label value:\n%s\n", str);
                 return 0;
             }
 
@@ -211,8 +242,9 @@ size_t create_out_arr (const FileText *code, char *out) {
         }
         
         AsmCmd cmd = get_cmd (str);
+        DEB ("Met command %s at line %d\n", cmd_names[cmd], line);
 
-        out[f_pos] = cmd;
+        (*out)[f_pos] = cmd;
         f_pos += SIZE_CMD;
         
         // skips name of func
@@ -221,12 +253,70 @@ size_t create_out_arr (const FileText *code, char *out) {
         int cnt = 0;
         
         while (cnt++ < cmd_args[cmd]) { 
-            set_arg (&str, out + f_pos);
+            set_arg (&str, *out + f_pos);
             f_pos += SIZE_ARG;
         }
     }
 
     return f_pos;
+}
+
+int add_include (const char *str, char **out, size_t *bin_size) {
+    assert (str);
+    assert (out);
+    assert (bin_size);
+
+    skip_name (&str); // skips #include
+    skip_blank (&str);
+
+    if (!*str) {
+        printf ("No argument of directive include\n");
+        return 0;
+    }
+
+    if (*str != ':') {
+        printf ("No label of directive include\n");
+        return 0;
+    }
+    
+    str++;
+    if (set_label_val (str, *bin_size + FILE_DATA_SIZE) == -1) {
+        printf ("ERROR at line trying to set label value:\n%s\n", str);
+        return 0;
+    }
+
+    skip_name (&str); // skips label
+    skip_blank (&str);
+
+    printf ("Calculating name of bin file\n");
+    char end_sym = ' ';
+    if (*str == '"')
+        end_sym = '"';
+    const char *end = strchr (str + 1, end_sym);
+    if (!end)
+        end = strchr (str + 1, '\0');
+    int len = end - str;
+    char *name = (char*) calloc (len + 2, sizeof (*name));
+    memcpy (name, str, len * sizeof (*name));
+
+    printf ("Openning file \"%s\"\n", name);
+    FILE *f_in = fopen_err (name, "rb");
+    if (!f_in)
+        return 0;
+
+    printf ("Reading file \"%s\"\n", name);
+    int file_size = size_of_file (f_in);
+    *bin_size += file_size;
+    *out = (char*) realloc (*out, (*bin_size) * sizeof (**out));
+    printf ("Realloced\n");
+    int new_len = fread (*out + *bin_size - file_size, sizeof (**out), file_size, f_in);
+    assert (new_len == file_size);
+
+    printf ("Read %d bytes from file %s\n", new_len, name);
+    fclose (f_in);
+    free (name);
+
+    return new_len;
 }
 
 

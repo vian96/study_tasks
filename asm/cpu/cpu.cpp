@@ -186,7 +186,7 @@ void execute_cpu (Cpu *cpu) {
 #include "meta.h"
 
     while (cpu->ip < cpu->len) {
-        DEB ("while..\n");
+        DEB ("\n");
 
         int cmd = cpu->bin[cpu->ip];
         switch (cmd) {
@@ -207,6 +207,7 @@ void execute_cpu (Cpu *cpu) {
 
 }
 
+// WARNING: it can modify binary code
 int *get_arg (const char *bin, Cpu *cpu) {
     assert (bin);
 
@@ -216,7 +217,7 @@ int *get_arg (const char *bin, Cpu *cpu) {
 
     switch (type) {
     case ARG_INT:
-        // TODO is it safe?
+        DEB ("Got const int arg: %d\n", *(int*) bin);
         return (int*) bin;
     
     case ARG_REG:
@@ -224,7 +225,8 @@ int *get_arg (const char *bin, Cpu *cpu) {
             printf ("Wrong reg number, trying to access %d, regs count is %d, exiting cpu\n", data, NUM_RAM);
             return nullptr;
         }
-
+        
+        DEB ("Got reg arg: %d\n", cpu->regs[data]);
         return cpu->regs + data;
 
     case ARG_RAM:
@@ -237,6 +239,8 @@ int *get_arg (const char *bin, Cpu *cpu) {
             Sleep (RAM_DELAY);
         else
             Sleep (VID_RAM_DELAY);
+
+        DEB ("Got ram arg: %d\n", cpu->ram[data]);
         return cpu->ram + data;
 
     case ARG_REG_RAM:
@@ -254,6 +258,8 @@ int *get_arg (const char *bin, Cpu *cpu) {
             Sleep (RAM_DELAY);
         else
             Sleep (VID_RAM_DELAY);
+
+        DEB ("Got ram reg arg: %d\n", cpu->regs[cpu->regs[data]]);
         return cpu->ram + cpu->regs[data];
     
     default:
@@ -279,11 +285,11 @@ int input_int () {
 int *safe_pop (Cpu *cpu) {
     assert (cpu);
     
-    DEB ("Poping\n");
+    DEB ("Popping\n");
 
     if (is_empty_stack (&cpu->stack)) {
         printf (
-            "Poping before initializing stack at pos %d with cmd: %s, exiting cpu\n", 
+            "Popping before initializing stack at pos %d with cmd: %s, exiting cpu\n", 
             cpu->ip, cmd_names[cpu->bin[cpu->ip - 1]]
         );
         return nullptr;
@@ -291,13 +297,15 @@ int *safe_pop (Cpu *cpu) {
 
     if (!cpu->stack.size) {
         printf (
-            "Poping empty stack at pos %d with cmd: %s, exiting cpu\n", 
+            "Popping empty stack at pos %d with cmd: %s, exiting cpu\n", 
             cpu->ip, cmd_names[cpu->bin[cpu->ip - 1]]
         );
         return nullptr;
     }
 
-    return (int*) stack_pop (&cpu->stack);
+    int *val = (int*) stack_pop (&cpu->stack);
+    DEB ("Popped value: %d\n", *val);
+    return val;
 }
 
 void clear_input_buffer () {

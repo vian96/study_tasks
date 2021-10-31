@@ -1,7 +1,3 @@
-
-push 2500
-pop ax
-dump 0
-push 1
-pop [ax]
-dump 0
+#include :test_bin test.bin
+push -1
+out

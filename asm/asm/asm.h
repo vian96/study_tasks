@@ -8,4 +8,7 @@ char *parse_commands (const FileText *code, size_t *out_size);
 
 size_t get_out_size (const FileText *code);
 
-size_t create_out_arr (const FileText *code, char *out);
+size_t create_out_arr (const FileText *code, char **out, size_t *bin_size, int num_run);
+
+int add_include (const char *str, char **out, size_t *bin_size);
+

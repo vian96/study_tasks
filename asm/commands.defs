@@ -37,9 +37,9 @@ DEF_CMD_ (10, JB, 1, {
 DEF_CMD_ (11, SQRT, 0, {
     int x_ = POP;
     if (x_ < 0) 
-        printf ("ERROR: Calculating sqaure root from negative value, pushing nothing");
+        printf ("ERROR: Calculating sqaure root from negative value, pushing nothing\n");
     else
-        PUSH (sqrt (x_));
+        PUSH (sqrt (x_) + 0.5);
 })
 
 // deeper / higher
@@ -67,7 +67,7 @@ DEF_CMD_ (15, PRINT, 0, {
         buffer_[cnt_++] = '\n';
     }
 
-    buffer_[cnt_ - 1] = '\0'; // TODO why cnt_-1?
+    buffer_[cnt_] = '\0'; // TODO why cnt_-1?
     fputs (buffer_, stdout);
     Sleep (PRINT_DELAY);
 })
@@ -86,9 +86,11 @@ DEF_CMD_ (18, MEMSET, 1, {
     int val_ = ARG;
     
     if (left_ < 0 || right_ <= left_) {
-        printf ("Wrong args %d and %d of MEMSET at pos %d", left_, right_, cpu->ip);
+        printf ("Wrong args %d and %d of MEMSET at pos %d\n", left_, right_, cpu->ip);
         break;
     }
+
+    DEB ("MEMSET from %d to %d with val %d at pos %d\n", left_, right_, val_, cpu->regs['p'-'a']);
 
     for (int i = left_; i < right_; i++) 
         cpu->ram[i] = val_;
@@ -96,3 +98,8 @@ DEF_CMD_ (18, MEMSET, 1, {
 
 DEF_CMD_ (19, DUMP, 1, {cpu_dump (stdout, cpu, ARG);})
 
+DEF_CMD_ (20, MEOW, 0, {printf ("Meow!\n");})
+
+DEF_CMD_ (21, DATAINT, 1, {PUSH (*(int*) (cpu->bin + ARG));})
+
+DEF_CMD_ (22, DATACHAR, 1, {PUSH (cpu->bin[ARG]);})
