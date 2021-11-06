@@ -13,7 +13,7 @@ int main () {
     list_insert_ptr (&list, 2, 3);
     list_insert_ptr (&list, 1, 4);
     list_insert_ptr (&list, 1, 5);
-    
+    list_insert_ptr (&list, 0, 6);
 
     list_dump (&list);
 
@@ -28,6 +28,8 @@ int main () {
     t = get_list_data (&list, 4);
     printf ("%d\n", t);
     t = get_list_data (&list, 5);
+    printf ("%d\n", t);
+    t = get_list_data (&list, 6);
     printf ("%d\n", t);
 
     return 0;

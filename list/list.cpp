@@ -108,11 +108,23 @@ void list_insert_ptr (List *list, int ptr, ListDataT data) {
         return;
     }
 
-    if (ptr != 0) {
+    if (ptr == 0) {
+        if (list->size == 0) {
+            list->parts[free_ptr].next = 0;
+            list->tail = free_ptr;
+        }
+        else {
+            list->parts[free_ptr].next = list->head;
+            list->parts[list->head].prev = free_ptr;
+        }
+        
+        list->parts[free_ptr].prev = 0;
+        list->head = free_ptr;
+    }
+    else {
         if (part->next != 0)
             list->parts[part->next].prev = free_ptr;
 
-        list->parts[free_ptr].data = data;
         list->parts[free_ptr].next = part->next;
         list->parts[free_ptr].prev = ptr;
         part->next = free_ptr;
@@ -120,14 +132,8 @@ void list_insert_ptr (List *list, int ptr, ListDataT data) {
         if (list->tail == ptr)
             list->tail = free_ptr;
     }
-    else {
-        list->parts[free_ptr].data = data;
-        list->parts[free_ptr].prev = 0;
-        list->parts[free_ptr].next = 0;
-        list->head = free_ptr;
-        list->tail = free_ptr;
-    }
 
+    list->parts[free_ptr].data = data;
     list->size++;
 }
 
