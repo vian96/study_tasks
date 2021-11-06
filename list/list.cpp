@@ -84,10 +84,10 @@ void list_dump (List *list) {
     }
     */
 
-    printf ("\n-------------END OF DUMP---------------\n");
+    printf ("\n-------------END OF LIST DUMP---------------\n\n\n");
 }
 
-void list_insert_ptr (List *list, int ptr, ListDataT data) {
+int list_insert_ptr (List *list, int ptr, ListDataT data) {
     assert (list);
 
     if (list->is_sorted) {
@@ -96,16 +96,20 @@ void list_insert_ptr (List *list, int ptr, ListDataT data) {
 
     if (ptr >= list->capacity) {
         printf ("You are exceeding borders of list\n");
-        return;
+        return 0;
     }
 
     ListPart *part = list->parts + ptr;
-    int free_ptr = get_free_elem (list);
-    
+    if (part->prev == -1) {
+        printf ("You're trying to put elem after non-existing part of list\n");
+        return 0;
+    }
+
+    int free_ptr = get_free_elem (list);    
     if (free_ptr == 0 || free_ptr == -1) {
         // TODO reallocating list 
         printf ("Not enough allocated memory, returning\n"); 
-        return;
+        return 0;
     }
 
     if (ptr == 0) {
@@ -135,6 +139,8 @@ void list_insert_ptr (List *list, int ptr, ListDataT data) {
 
     list->parts[free_ptr].data = data;
     list->size++;
+
+    return free_ptr;
 }
 
 void list_remove_ptr (List *list, int ptr) {
@@ -145,7 +151,12 @@ void list_remove_ptr (List *list, int ptr) {
         // TODO check if it is sorted
     }
 
-    ListPart *part = list->parts + ptr + 1;
+    ListPart *part = list->parts + ptr;
+
+    if (part->prev == -1) {
+        printf ("You're trying to remove empty elem of list, returning\n");
+        return;
+    }
 
     if (part->next != 0)
         list->parts[part->next].prev = part->prev;
@@ -222,5 +233,19 @@ int get_free_elem (List *list) {
     return temp;
 }
 
+// this function is uneffective because it is for testing
+void print_list_elems (List *list) {
+    assert (list);
+
+    if (list->head == -1 || list->head == 0) {
+        printf ("List is empty\n");
+        return;
+    }
+    
+    printf ("Printing elements of list\n");
+    for (int i = 0; i < list->size; i++)
+        printf ("Elem %d is %d\n", i, get_list_data (list, i));
+    printf ("\n");
+}
 
 

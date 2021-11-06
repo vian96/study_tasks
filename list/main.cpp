@@ -7,30 +7,25 @@
 
 int main () {
     List list = {};
-    list_ctor (&list, 10);
-    list_insert_ptr (&list, 0, 1);
-    list_insert_ptr (&list, 1, 2);
-    list_insert_ptr (&list, 2, 3);
-    list_insert_ptr (&list, 1, 4);
-    list_insert_ptr (&list, 1, 5);
-    list_insert_ptr (&list, 0, 6);
+    List *lst = &list;
+    list_ctor (lst, 10);
 
-    list_dump (&list);
+    list_insert_ptr (lst, 0, 1);
+    list_insert_ptr (lst, 1, 2);
+    list_insert_ptr (lst, 2, 3);
+    list_insert_ptr (lst, 3, 4);
+    list_insert_ptr (lst, 0, 5);
 
-    int t = get_list_data (&list, 0);
-    printf ("%d\n", t);
-    t = get_list_data (&list, 1);
-    printf ("%d\n", t);
-    t = get_list_data (&list, 2);
-    printf ("%d\n", t);
-    t = get_list_data (&list, 3);
-    printf ("%d\n", t);
-    t = get_list_data (&list, 4);
-    printf ("%d\n", t);
-    t = get_list_data (&list, 5);
-    printf ("%d\n", t);
-    t = get_list_data (&list, 6);
-    printf ("%d\n", t);
+    list_dump (lst);
+    print_list_elems (lst);
+
+    list_remove_ptr (lst, 5);
+    list_remove_ptr (lst, 4);
+
+    list_dump (lst);
+    print_list_elems (lst);
+
+    list_dtor (lst);
 
     return 0;
 }

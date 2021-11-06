@@ -32,7 +32,9 @@ int list_check (List *list);
 // TODO output file
 void list_dump (List *list);
 
-void list_insert_ptr (List *list, int ptr, ListDataT data);
+// on success returns ptr to next elem
+// on failure returns 0
+int list_insert_ptr (List *list, int ptr, ListDataT data);
 
 void list_remove_ptr (List *list, int ptr);
 
@@ -41,3 +43,6 @@ ListDataT get_list_data (List *list, int index);
 ListPart *get_list_elem (List *list, int index);
 
 int get_free_elem (List *list);
+
+// this function is uneffective because it is for testing
+void print_list_elems (List *list);
