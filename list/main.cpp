@@ -25,7 +25,7 @@ int main () {
     printf ("%d\n", t);
     t = get_list_data (&list, 3);
     printf ("%d\n", t);
-    t = get_list_data (&list, 5);
+    t = get_list_data (&list, 4);
     printf ("%d\n", t);
     t = get_list_data (&list, 5);
     printf ("%d\n", t);
