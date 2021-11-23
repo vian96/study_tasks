@@ -27,7 +27,7 @@ int main ()
     list_remove_ptr (lst, 5);
     list_remove_ptr (lst, 4);
 
-    //list_dump (lst);
+    list_dump (lst);
     printf ("Check of list: %d\n", list_check (lst));
     print_list_elems (lst);
 

@@ -1,0 +1,47 @@
+# This is automatically generated dump of list
+digraph D
+    {
+    rankdir=LR;
+    node [shape=record];
+
+
+    node0[label = "index:0 | data:0 | next:0 | prev:0"];
+
+    node1[shape=record label = "<i> index : 1 | <d> data : 1 | <n> next : 2 | <p> prev : 0"];
+    node1:<n> -> node2 [color=red constraint=false];
+    node1:<p> -> node0 [color=green constraint=false];
+
+    node2[shape=record label = "<i> index : 2 | <d> data : 2 | <n> next : 3 | <p> prev : 1"];
+    node2:<n> -> node3 [color=red constraint=false];
+    node2:<p> -> node1 [color=green constraint=false];
+
+    node3[shape=record label = "<i> index : 3 | <d> data : 3 | <n> next : 0 | <p> prev : 2"];
+    node3:<n> -> node0 [color=red constraint=false];
+    node3:<p> -> node2 [color=green constraint=false];
+
+    node4[shape=record label = "<i> index : 4 | <d> data : 4 | <n> next : 5 | <p> prev : -1"];
+    node4:<n> -> node5 [color=red constraint=false];
+    node5[shape=record label = "<i> index : 5 | <d> data : 5 | <n> next : 6 | <p> prev : -1"];
+    node5:<n> -> node6 [color=red constraint=false];
+    node6[shape=record label = "<i> index : 6 | <d> data : 0 | <n> next : 7 | <p> prev : -1"];
+    node6:<n> -> node7 [color=red constraint=false];
+    node7[shape=record label = "<i> index : 7 | <d> data : 0 | <n> next : 8 | <p> prev : -1"];
+    node7:<n> -> node8 [color=red constraint=false];
+    node8[shape=record label = "<i> index : 8 | <d> data : 0 | <n> next : 9 | <p> prev : -1"];
+    node8:<n> -> node9 [color=red constraint=false];
+    node9[shape=record label = "<i> index : 9 | <d> data : 0 | <n> next : 0 | <p> prev : -1"];
+    node9:<n> -> node0 [color=red constraint=false];
+        {
+        edge[color=white]
+        node0 -> node1
+        node1 -> node2
+        node2 -> node3
+        node3 -> node4
+        node4 -> node5
+        node5 -> node6
+        node6 -> node7
+        node7 -> node8
+        node8 -> node9
+        }
+
+    }

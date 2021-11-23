@@ -7,6 +7,10 @@
 
 // TODO deal with capacity and capacity + 1, i am very puzzled
 
+static int max_int (int a, int b) {
+    return (a > b) ? a : b;
+}
+
 void list_ctor (List *list, int capacity) 
     {
     assert (list);
@@ -83,9 +87,9 @@ int list_check (const List *list)
             if (next->prev != prev) 
                 {
                 printf (
-                        "Error, elem's %d prev %d doesn't point to actual previous elem %d\n", 
-                        part->next, next->prev, prev
-                    );
+                    "Error, elem's %d prev %d doesn't point to actual previous elem %d\n", 
+                    part->next, next->prev, prev
+                );
                 return 0;
                 }
             prev = part->next;
@@ -96,18 +100,18 @@ int list_check (const List *list)
         if (list->tail != part - list->parts) 
             {
             printf (
-                    "Error, tail %d doesn't point to actual end of list %d\n", 
-                    list->tail, part - list->parts
-                );
+                "Error, tail %d doesn't point to actual end of list %d\n", 
+                list->tail, part - list->parts
+            );
             return 0;
             }
 
         if (cnt != list->size) 
             {
             printf (
-                    "Error, list's size %d is not the same as actual size %d\n", 
-                    list->size, cnt
-                );
+                "Error, list's size %d is not the same as actual size %d\n", 
+                list->size, cnt
+            );
             return 0;
             }
         }
@@ -121,10 +125,10 @@ int list_check (const List *list)
             if (part->prev != -1) 
                 {
                 printf (
-                        "Error, elem with index %d is considered to be free, "
-                        "however prev is %d but not -1\n",
-                        part - list->parts, part->prev
-                    );
+                    "Error, elem with index %d is considered to be free, "
+                    "however prev is %d but not -1\n",
+                    part - list->parts, part->prev
+                );
                 return 0;
                 }
             part = list->parts + part->next;
@@ -135,10 +139,10 @@ int list_check (const List *list)
     if (list->capacity && cnt + 1 != list->capacity) 
         {
         printf (
-                "I counted %d elems (not including nul indexed one), but it should have %d, "
-                "you missed some of them\n", 
-                cnt, list->capacity
-            );
+            "I counted %d elems (not including nul indexed one), but it should have %d, "
+            "you missed some of them\n", 
+            cnt, list->capacity
+        );
         return 0;
         }
 
@@ -169,31 +173,66 @@ void list_dump (const List *list)
         {
         ListPart *part = list->parts + i;
         printf (
-                "index: %d \t"
-                "data: %d \t"
-                "next: %d \t"
-                "prev: %d \t\n",
-                i,
-                part->data,
-                part->next,
-                part->prev
+            "index: %d \t"
+            "data: %d \t"
+            "next: %d \t"
+            "prev: %d \t\n",
+            i,
+            part->data,
+            part->next,
+            part->prev
+        );
+        }
+
+    printf ("\n-------------END OF LIST DUMP---------------\n\n\n");
+    
+    printf ("Creating graphviz dump...\n");
+
+    FILE *gv_out = fopen ("list_dump.gv", "w");
+    // TODO change fprintf to fputs when not needed
+    fprintf (
+        gv_out,
+        "# This is automatically generated dump of list\n"
+        "digraph D\n"
+        "    {\n"
+        "    rankdir=LR;\n"
+        "    node [shape=record];\n\n\n"
+    );
+
+    fprintf (gv_out, "    node0[label = \"index:0 | data:0 | next:0 | prev:0\"];\n\n");
+    for (int i = 1; i < list->capacity; i++) 
+        {
+        ListPart *cur = list->parts + i;
+        fprintf (
+            gv_out,
+            "    node%d[shape=record label = "
+            "\"<i> index : %d | <d> data : %d | <n> next : %d | <p> prev : %d\"];\n",
+            i, i, cur->data, cur->next, cur->prev
+        );
+        if (cur->next != -1)
+            fprintf (
+                gv_out, 
+                "    node%d:<n> -> node%d [color=red constraint=false];\n",
+                i, cur->next
+            );
+        if (cur->prev != -1)
+            fprintf (
+                gv_out, 
+                "    node%d:<p> -> node%d [color=green constraint=false];\n\n",
+                i, cur->prev
             );
         }
 
-    /*
-    printf ("\n------------- DUMP of free elems---------------\n");
-    int ptr = list->free;
-    int cnt = 0;
-    int screen_len = 15;
-    while (ptr != 0) 
-        {
-        printf ("%d\n", 0);
+    fprintf (gv_out, "        {\n        edge[color=white]\n");
+    for (int i = 0; i + 1 < list->capacity; i++) 
+        fprintf (gv_out, "        node%d -> node%d\n", i, i + 1);
 
-        cnt++;
-        }
-    */
+    fprintf (gv_out, "        }\n");
 
-    printf ("\n-------------END OF LIST DUMP---------------\n\n\n");
+
+    fprintf (gv_out, "\n    }\n");
+    fclose (gv_out);
+    printf ("End of graphviz dump...\n");
     }
 
 int list_insert_ptr (List *list, int ptr, ListDataT data) 
@@ -383,6 +422,7 @@ void print_list_elems (const List *list)
     printf ("Printing elements of list\n");
     for (int i = 0; i < list->size; i++)
         printf ("Elem %d is %d\n", i, get_list_data (list, i));
+
     printf ("\n");
     }
 
