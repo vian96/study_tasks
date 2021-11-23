@@ -183,8 +183,6 @@ void list_dump (const List *list)
             part->prev
         );
         }
-
-    printf ("\n-------------END OF LIST DUMP---------------\n\n\n");
     
     printf ("Creating graphviz dump...\n");
 
@@ -232,7 +230,10 @@ void list_dump (const List *list)
 
     fprintf (gv_out, "\n    }\n");
     fclose (gv_out);
+    system ("dot list_dump.gv -Tpng -o list_dump.png && list_dump.png");
     printf ("End of graphviz dump...\n");
+
+    printf ("\n-------------END OF LIST DUMP---------------\n\n\n");
     }
 
 int list_insert_ptr (List *list, int ptr, ListDataT data) 
