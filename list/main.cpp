@@ -13,10 +13,10 @@ int test5 ();
 
 int main () 
     {
-    /*assert (test1 ());
+    assert (test1 ());
     assert (test2 ());
     assert (test3 ());
-    assert (test4 ());*/ 
+    assert (test4 ()); 
     assert (test5 ());
     
     return 0;

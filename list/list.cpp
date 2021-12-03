@@ -11,13 +11,9 @@
 #define DEB(...) 
 #endif
 
-// TODO deal with capacity and capacity + 1, i am very puzzled
-
 static int max_int (int a, int b) {
     return (a > b) ? a : b;
 }
-
-static int cmp_linear_list_parts (const void *a_, const void *b_);
 
 void list_ctor (List *list, int capacity) 
     {
@@ -192,7 +188,7 @@ int list_check (const List *list)
     
     if (list->capacity && cnt + 1 != list->capacity) 
         {
-        printf ("I counted %d elems (not including nul indexed one), but it should have %d, "
+        printf ("I counted %d elems (not including null indexed one), but it should have %d, "
                 "you missed some of them\n", 
                 cnt, list->capacity);
         return 0;
@@ -246,10 +242,10 @@ void list_dump (const List *list)
                 part->prev);
         }
     
-    printf ("Creating file for graphviz\n");
+    DEB ("Creating file for graphviz\n");
     FILE *gv_out = fopen ("list_dump.gv", "w+");
     DEB ("Opened graphviz file\n");
-    // TODO change fprintf to fputs when not needed
+
     fprintf (gv_out,
             "# This is automatically generated dump of list\n"
             "digraph D\n"
@@ -533,20 +529,4 @@ void linearize_list (List *list)
     list->tail = ind - 1;
     }
 
-// returns > 0 if a is after b
-static int cmp_linear_list_parts (const void *a_, const void *b_)
-    {
-    assert (a_);
-    assert (b_);
-
-    int a = ((ListPart*)a_) -> prev, b = ((ListPart*)b_) -> prev;
-
-    if (a == -1 && b == -1)
-        return 0;
-    if (a == -1)
-        return 1;
-    if (b == -1)
-        return -1;
-    return a - b;
-    }
 

@@ -20,8 +20,7 @@ struct List
     int is_sorted;
     int size;
     
-    // capacity means maximum count of elements to be placed in list, 
-    // so allocated size is capacity + 1 for including the first zero element
+    // capacity means number of allocated parts, so the maximum logical size is capacity - 1
     int capacity; 
     };
 
