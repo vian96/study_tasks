@@ -1,0 +1,1 @@
+g++ -Wall -Wextra -Wpedantic main.cpp list.cpp -o main %* && main

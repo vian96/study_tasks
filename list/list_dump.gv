@@ -5,23 +5,26 @@ digraph D
     node [shape=record];
 
 
-    node0[label = "index:0 | data:0 | next:0 | prev:0"];
+    node0:<head> -> node1 [constraint=false];
+    node0:<tail> -> node3 [constraint=false];
+    node0:<free> -> node4 [constraint=false];
+    node0[label = "<head> head : 1 | <tail> tail : 3 | <free> free : 4 | | index : 0 | data : 0 | next : 0 | prev : 0 | | size : 3 | is sorted : 1 | is ok : 1"];
 
-    node1[shape=record label = "<i> index : 1 | <d> data : 1 | <n> next : 2 | <p> prev : 0"];
+    node1[shape=record label = "<i> index : 1 | <d> data : 5 | <n> next : 2 | <p> prev : 0"];
     node1:<n> -> node2 [color=red constraint=false];
     node1:<p> -> node0 [color=green constraint=false];
 
-    node2[shape=record label = "<i> index : 2 | <d> data : 2 | <n> next : 3 | <p> prev : 1"];
+    node2[shape=record label = "<i> index : 2 | <d> data : 1 | <n> next : 3 | <p> prev : 1"];
     node2:<n> -> node3 [color=red constraint=false];
     node2:<p> -> node1 [color=green constraint=false];
 
-    node3[shape=record label = "<i> index : 3 | <d> data : 3 | <n> next : 0 | <p> prev : 2"];
+    node3[shape=record label = "<i> index : 3 | <d> data : 4 | <n> next : 0 | <p> prev : 2"];
     node3:<n> -> node0 [color=red constraint=false];
     node3:<p> -> node2 [color=green constraint=false];
 
-    node4[shape=record label = "<i> index : 4 | <d> data : 4 | <n> next : 5 | <p> prev : -1"];
+    node4[shape=record label = "<i> index : 4 | <d> data : 0 | <n> next : 5 | <p> prev : -1"];
     node4:<n> -> node5 [color=red constraint=false];
-    node5[shape=record label = "<i> index : 5 | <d> data : 5 | <n> next : 6 | <p> prev : -1"];
+    node5[shape=record label = "<i> index : 5 | <d> data : 0 | <n> next : 6 | <p> prev : -1"];
     node5:<n> -> node6 [color=red constraint=false];
     node6[shape=record label = "<i> index : 6 | <d> data : 0 | <n> next : 7 | <p> prev : -1"];
     node6:<n> -> node7 [color=red constraint=false];

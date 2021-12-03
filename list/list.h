@@ -1,7 +1,8 @@
 
 typedef int ListDataT;
 
-// TODO change name
+const int MIN_LIST_CAP = 10;
+
 struct ListPart 
     {
     ListDataT data;
@@ -11,7 +12,6 @@ struct ListPart
 
 struct List 
     {
-    // TODO change name 
     ListPart *parts;
 
     int head;
@@ -31,7 +31,6 @@ void list_dtor (List *list);
 
 int list_check (const List *list);
 
-// TODO output file
 void list_dump (const List *list);
 
 // on success returns ptr to next elem
@@ -48,4 +47,6 @@ int get_free_elem (List *list);
 
 // this function is uneffective because it is for testing
 void print_list_elems (const List *list);
+
+void linearize_list (List *list);
 
