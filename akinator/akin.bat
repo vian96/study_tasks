@@ -1,0 +1,1 @@
+g++ main.cpp akin_tree.cpp "../onegin/file_utils.cpp" -o main -Wall -Wextra -Wpedantic %*

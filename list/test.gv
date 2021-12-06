@@ -1,0 +1,33 @@
+digraph D {
+    #node [shape=record];
+
+    A[shape=plaintext label=<
+        <table>
+            <tr><td>index</td><td>data</td><td>next</td><td>prev</td></tr>
+            <tr><td>0</td>     <td>0</td>  <td>0</td>   <td>0</td></tr>
+        </table>
+    >];
+    B[shape=plaintext label=<
+        <table>
+            <tr><td>index</td><td>data</td><td>next</td><td>prev</td></tr>
+            <tr><td>0</td>     <td>0</td>  <td>0</td>   <td>0</td></tr>
+        </table>
+    >];
+    C[shape=plaintext label=<
+        <table>
+            <tr><td>index</td><td>data</td><td>next</td><td>prev</td></tr>
+            <tr><td>0</td>     <td>0</td>  <td>0</td>   <td>0</td></tr>
+        </table>
+    >];
+    D[shape=plaintext label=<
+        <table>
+            <tr><td>index</td><td>data</td><td>next</td><td>prev</td></tr>
+            <tr><td>0</td>     <td>0</td>  <td>0</td>   <td>0</td></tr>
+        </table>
+    >];
+
+    {rank=same A B C D};
+    
+    B -> C -> D;
+    
+}
