@@ -11,3 +11,5 @@ asm/cpu/cpu.exe
 Bad apple on cpu/gen.exe
 asm/asm/asm.exe
 list/main.exe
+akinator/main.exe
+.vscode/launch.json

@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 #ifndef NDEBUG
 #define DEB(...) printf(__VA_ARGS__)
@@ -38,7 +39,12 @@ AkinTree *read_akin_node (StringRef **line, AkinTree *parent)
     
     DEB ("Met line %s with type %d\n", (*line)->begin, type);
 
-    AkinTree *tree = new_akin_tree (type, parent, (*line)->begin);
+    AkinTree *tree = new_akin_tree (type, parent, (char*) calloc (MAX_AKIN_NAME_LEN, sizeof (char)));
+    if (type == AT_QUESTION)
+        strcpy (tree->data, (*line)->begin + 1);
+    else
+        strcpy (tree->data, (*line)->begin);
+
     (*line)++;
 
     if (type == AT_QUESTION)
@@ -53,19 +59,15 @@ AkinTree *read_akin_node (StringRef **line, AkinTree *parent)
 void free_akin_tree (AkinTree *tree)
     {
     assert (tree);
-
+    
     if (tree->left != nullptr)
-        {
         free_akin_tree (tree->left);
-        free(tree->left);
-        tree->left = nullptr;
-        }
+
     if (tree->right != nullptr)
-        {
         free_akin_tree (tree->right);
-        free(tree->right);
-        tree->right = nullptr;
-        }
+    
+    free (tree);
+    free (tree->data);
     }
 
 void akin_tree_dump (AkinTree *tree, int depth)
@@ -81,4 +83,21 @@ void akin_tree_dump (AkinTree *tree, int depth)
         akin_tree_dump (tree->right, depth + 4);
         }
     }
+
+void write_tree_to_base (AkinTree *tree, FILE *f_out, int depth)
+    {
+    assert (f_out);
+    
+    fprintf (f_out, "%*s", depth, "");
+    if (tree->type == AT_QUESTION)
+        fputc ('?', f_out);
+    fprintf (f_out, "%s\n", tree->data);
+    
+    if (tree->type == AT_QUESTION)
+        {
+        write_tree_to_base (tree->left, f_out, depth + 4);
+        write_tree_to_base (tree->right, f_out, depth + 4);
+        }
+    }
+
 

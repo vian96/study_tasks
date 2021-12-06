@@ -1,4 +1,9 @@
+#ifndef AKINATOR_AKIN_TREE_H
+#define AKINATOR_AKIN_TREE_H
+
 #include "../onegin/file_utils.h"
+
+const size_t MAX_AKIN_NAME_LEN = 100;
 
 enum AkinTreeType
     {
@@ -11,6 +16,7 @@ struct AkinTree
     AkinTreeType type;
     AkinTree *parent;
     char *data;
+    // left is positive answer
     AkinTree *left, *right;
     };
 
@@ -23,7 +29,10 @@ AkinTree *new_akin_tree (AkinTreeType type, AkinTree *parent = nullptr,
 AkinTree *read_akin_node (StringRef **line, AkinTree *parent = nullptr);
 
 // TODO change to dtor
-// WARNING: it does not frees strings because it doesn't copy it
 void free_akin_tree (AkinTree *tree);
 
 void akin_tree_dump (AkinTree *tree, int depth = 0);
+
+void write_tree_to_base (AkinTree *tree, FILE *f_out, int depth = 0);
+
+#endif // AKINATOR_AKIN_TREE_H
