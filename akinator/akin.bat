@@ -1,1 +1,1 @@
-gcc main.cpp akin_tree.cpp akinator.cpp "../onegin/file_utils.cpp" -o main -Wall -Wextra -Wpedantic %*
+gcc main.cpp akin_tree.cpp akinator.cpp "../onegin/file_utils.cpp" "../stack/source/stack.cpp" -o main -Wall -Wextra -Wpedantic %*

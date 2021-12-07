@@ -1,5 +1,7 @@
 #include "akinator.h"
 
+#include "../stack/source/stack.h"
+
 #include <string.h>
 
 void play_akin (AkinTree *tree)
@@ -76,4 +78,47 @@ char ask_yes_no (const char *message)
         } while (!is_ok);
     return '\0';
     }
+
+void akin_seek_definition (AkinTree *tree, const char *name, Stack *stk_yes, Stack *stk_no)
+    {
+    assert (tree);
+    assert (name);
+    assert (stk_yes);
+    assert (stk_no);
+
+    if (tree->type == AT_QUESTION)
+        {
+        stack_push (stk_yes, &tree->data);
+        akin_seek_definition (tree->left, name, stk_yes, stk_no);
+        stack_pop (stk_yes);
+
+        stack_push (stk_no, &tree->data);
+        akin_seek_definition (tree->right, name, stk_yes, stk_no);
+        stack_pop (stk_no);
+        
+        // printf ("Popped %s\n", * (char**) stack_pop (stk));    
+        return;
+        }
+
+    // AT_ANSWER
+    if (strcmp (name, tree->data) != 0)
+        {
+        // wrong name
+        return;
+        }
+    
+    printf ("I found it here\n");
+    const char **tmp = (const char**) stk_yes->arr;
+    printf ("%s is something ", name);
+    for (int i = 0; i < stk_yes->size; i++)
+        printf ("that %s ", *(tmp + i));
+        
+    tmp = (const char**) stk_no->arr;
+    printf ("BUT ", name);
+    for (int i = 0; i < stk_no->size; i++)
+        printf ("that not %s ", *(tmp + i));
+
+    printf ("that's it.\n");
+    }
+
 

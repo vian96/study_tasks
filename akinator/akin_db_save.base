@@ -1,7 +1,7 @@
 ?животное
     ?живет в болоте
         лягушка
-        ?It lives in tree
+        ?lives in tree
             Belka
             ФОПФ
     ?ведет матан
