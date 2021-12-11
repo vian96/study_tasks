@@ -13,3 +13,6 @@ asm/asm/asm.exe
 list/main.exe
 akinator/main.exe
 .vscode/launch.json
+akinator/main.exe.log
+akinator/main.exe.log.dmp
+*.exe
