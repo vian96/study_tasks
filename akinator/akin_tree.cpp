@@ -1,5 +1,7 @@
 #include "akin_tree.h"
 
+#include "../asm/asm/string_utils.h"
+
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
@@ -33,17 +35,20 @@ AkinTree *read_akin_node (StringRef **line, AkinTree *parent)
     {
     assert (line);
 
+    const char *str = (*line)->begin;
+    skip_blank (&str);
+
     AkinTreeType type = AT_ANSWER;
-    if (*(*line)->begin == '?')
+    if (*str == '?')
         type = AT_QUESTION;
     
-    DEB ("Met line %s with type %d\n", (*line)->begin, type);
+    DEB ("Met line %s with type %d\n", str, type);
 
     AkinTree *tree = new_akin_tree (type, parent, (char*) calloc (MAX_AKIN_NAME_LEN, sizeof (char)));
     if (type == AT_QUESTION)
-        strcpy (tree->data, (*line)->begin + 1);
+        strcpy (tree->data, str + 1);
     else
-        strcpy (tree->data, (*line)->begin);
+        strcpy (tree->data, str);
 
     (*line)++;
 
