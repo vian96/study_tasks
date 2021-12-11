@@ -50,11 +50,17 @@ void diff_tree_dtor (DiffTree *tree)
         
 
     if (tree->left)
+        {
         diff_tree_dtor (tree->left);
+        free (tree->left);
+        }
     tree->left = nullptr;
     
     if (tree->right)
+        {
         diff_tree_dtor (tree->right);
+        free (tree->right);
+        }
     tree->right = nullptr;
     }
 
@@ -187,11 +193,11 @@ void print_tree (const DiffTree *tree)
     switch (tree->type)
     {
     case DT_VAR:
-        printf ("(%s)", tree->data.var);
+        printf ("%s", tree->data.var);
         return;
     
     case DT_NUMBER:
-        printf ("(%g)", tree->data.number);
+        printf ("%g", tree->data.number);
         return;
 
     case DT_OPERATOR:
@@ -208,6 +214,16 @@ void print_tree (const DiffTree *tree)
 
     default:
         printf ("\nERROR: unknown type of node while printing, got: %d\n", tree->type);
+         if (tree->left)
+            print_tree (tree->left);
+        else
+            printf ("null");
+
+        printf (" was L and R is ");
+        if (tree->right)
+            print_tree (tree->right);
+        printf ("null");
+        
         break;
     }
     }
@@ -443,7 +459,8 @@ DiffTreeData new_oper_data (DiffTreeOper oper)
 #define is_zero(node) ( is_number((node), 0) )
 #define is_one(node) ( is_number((node), 1) )
 
-#define pass_to_par(to_pass)    {              \
+// TODO what to do with this enormous define?
+#define pass_to_par(to_pass)    {               \
     DEB ("I got to pass_to parent\n");          \
                                                 \
     if (tree->parent->left == tree)             \
@@ -463,15 +480,22 @@ DiffTreeData new_oper_data (DiffTreeOper oper)
         }                                       \
                                                 \
     if (to_pass == R)                           \
+        {                                       \
         diff_tree_dtor (L);                     \
+        free (L);                               \
+        }                                       \
     else if (to_pass == L)                      \
+        {                                       \
         diff_tree_dtor (R);                     \
+        free (R);                               \
+        }                                       \
     else                                        \
         printf ("You gave me strange thing to pass, it is %p, L is %p, R is %p\n", (to_pass), L, R);    \
                                                 \
     R = nullptr;                                \
     L = nullptr;                                \
     diff_tree_dtor (tree);                      \
+    free (tree);                                \
     return count + 1;                           \
     }       
 
@@ -613,8 +637,10 @@ double calculate_diff_tree (DiffTree *tree, int *count)
                 (*count)++;
 
             diff_tree_dtor (tree->left);
+            free (tree->left);
             tree->left = nullptr;
             diff_tree_dtor (tree->right);
+            free (tree->right);
             tree->right = nullptr;
             
             tree->type = DT_NUMBER;
