@@ -71,8 +71,8 @@ void free_akin_tree (AkinTree *tree)
     if (tree->right != nullptr)
         free_akin_tree (tree->right);
     
-    free (tree);
     free (tree->data);
+    free (tree);
     }
 
 void akin_tree_dump (AkinTree *tree, int depth)

@@ -43,25 +43,18 @@ void diff_tree_dtor (DiffTree *tree)
     if (tree->type == DT_NUMBER || tree->type == DT_OPERATOR)
         tree->data.number = 0; // because number is the biggest part of data
     else if (tree->type == DT_VAR)
-        {
-        free (tree->data.var);
         tree->data.var = 0;
-        }
         
 
     if (tree->left)
-        {
         diff_tree_dtor (tree->left);
-        free (tree->left);
-        }
     tree->left = nullptr;
     
     if (tree->right)
-        {
         diff_tree_dtor (tree->right);
-        free (tree->right);
-        }
     tree->right = nullptr;
+
+    free (tree);
     }
 
 // TODO divide into smaller functions like read_id, read_num ...
@@ -480,22 +473,15 @@ DiffTreeData new_oper_data (DiffTreeOper oper)
         }                                       \
                                                 \
     if (to_pass == R)                           \
-        {                                       \
         diff_tree_dtor (L);                     \
-        free (L);                               \
-        }                                       \
     else if (to_pass == L)                      \
-        {                                       \
         diff_tree_dtor (R);                     \
-        free (R);                               \
-        }                                       \
     else                                        \
         printf ("You gave me strange thing to pass, it is %p, L is %p, R is %p\n", (to_pass), L, R);    \
                                                 \
     R = nullptr;                                \
     L = nullptr;                                \
     diff_tree_dtor (tree);                      \
-    free (tree);                                \
     return count + 1;                           \
     }       
 
@@ -512,7 +498,7 @@ int simplify_diff_tree (DiffTree *tree)
             count += temp;
             }
 
-    temp = 1;
+    temp = 1; // is needed because of while
     if (R)
         while (temp != 0)
             {
@@ -637,10 +623,8 @@ double calculate_diff_tree (DiffTree *tree, int *count)
                 (*count)++;
 
             diff_tree_dtor (tree->left);
-            free (tree->left);
             tree->left = nullptr;
             diff_tree_dtor (tree->right);
-            free (tree->right);
             tree->right = nullptr;
             
             tree->type = DT_NUMBER;
