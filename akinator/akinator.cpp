@@ -13,6 +13,7 @@
 
 void akinator_app ()
     {
+    // TODO divide into smaller functions
     FILE *base_file = fopen_err ("akin_db.base", "r");
     if (!base_file)
         return;
@@ -134,6 +135,7 @@ void play_akin (AkinTree *tree)
     char *name = (char*) calloc (MAX_AKIN_NAME_LEN, sizeof (*name)), 
          *question = (char*) calloc (MAX_AKIN_NAME_LEN, sizeof (*name));
     
+    // TODO move adding element to another function
     AT_SAY ("Это очень грустно, но я стану сильнее! Введи имя того что ты загадал: ");
     fgets (name, MAX_AKIN_NAME_LEN, stdin);
     name[strcspn(name, "\n")] = 0; // removes \n at end
@@ -173,7 +175,8 @@ char ask_yes_no (const char *message)
             AT_SAY ("Ты написал какой-то бред, ответ может начинаться только с д, н, n или y\n");
             is_ok = 0;
             }
-        } while (!is_ok);
+    } while (!is_ok);
+
     return '\0';
     }
 
@@ -245,6 +248,7 @@ int akin_seek_def_stack (AkinTree *tree, const char *name, Stack *stk_names = nu
         // wrong name
         return 0;
     
+    // TODO move print definiton to function (stk_names, st_is)
     DEB ("I found it here\n");
     const char **names = (const char**) stk_names->arr;
     const int *status = (const int*) stk_is->arr;
@@ -277,7 +281,7 @@ void akin_diff_def (AkinTree *tree, const char *name1, const char *name2)
     Stack *stk_is2 = (Stack *) calloc (1, sizeof (*stk_is2));
     stack_ctor (stk_is2, 1, sizeof (int));
 
-    // TODO how to avoid this copy-paste?
+    // TODO how to avoid this copy-paste with free?
     if (!akin_seek_def_stack (tree, name1, stk_names1, stk_is1))
         {
         AT_SAY ("Я не нашла, кто такой %s, поэтому не буду искать разницу\n", name1);
@@ -343,6 +347,7 @@ void akin_diff_def (AkinTree *tree, const char *name1, const char *name2)
     else
         AT_SAY ("%s и %s не имеют ничего общего и отличаются тем, что \n", name1, name2);
     
+    // TODO see todo "move print definiton..."
     int begin_diff = i;
     AT_SAY ("%s это кто-то ", name1);
     for (; i < stk_is1->size; i++)
