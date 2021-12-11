@@ -1,0 +1,1 @@
+g++ main.cpp diff_tree.cpp -o main -Wall -Wextra -Wpedantic -Wformat=0 %*
