@@ -4,22 +4,30 @@
 
 int main ()
     {
-    double x;
-    const char *expr = /*"((((1)*((x)+(0)))/(1))^(0))",  //*/ "(((x)+(2))/((((x)^(2))+(2))^(0.5)",  // "(((27)+((x)*(38)))^((34)/((27)/(4)))",
-        **to_read = &expr;
-
     /*
+    const char *expr = "(((x)^(0.6))^(2))", // "((((1)+(((3)+((2)+(x)))+(6)))^(0.6))^(2))", 
+                **to_read = &expr;
+
     DiffTree *tree = read_expression (to_read, nullptr);
     dt_to_latex (tree);
     printf ("\n\n");
     simplify_diff_tree (tree);
+    //printf ("\nTST\n");
+    //dt_calc_close (tree);
+    //diff_tree_dump (tree);
     printf ("\n\n");
     dt_to_latex (tree);
     printf ("\n\n");
+    print_tree (tree);
+    printf ("\n");
     diff_tree_dtor (tree);
 
     //*/
+
     
+    const char *expr = "(((x)+(2))/((((x)^(2))+(2))^(0.5)", // "((((1)*((x)+(0)))/(1))^(0))", // "(((27)+((x)*(38)))^((34)/((27)/(4)))",
+        **to_read = &expr;
+
     DiffTree *tree = read_expression (to_read, nullptr);
     //print_tree (tree);
     printf ("\n");
@@ -45,7 +53,10 @@ int main ()
     simplify_diff_tree (diff);
     printf ("\n\n");
 
-    check_diff_tree (diff);
+    if (check_diff_tree (diff))
+        printf ("simplified IS FULLY OK\n");
+    else   
+        printf ("simplified IS BROKEN AS HELL!!!!!!!!!\n");
 
     // diff_tree_dump (diff);
 

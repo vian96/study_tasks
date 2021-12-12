@@ -38,8 +38,6 @@ void diff_tree_dtor (DiffTree *tree)
     {
     assert (tree);
 
-    tree->type = (DiffTreeType) 0;
-    tree->parent = 0;
     if (tree->type == DT_NUMBER || tree->type == DT_OPERATOR)
         tree->data.number = 0; // because number is the biggest part of data
     else if (tree->type == DT_VAR)
@@ -47,6 +45,9 @@ void diff_tree_dtor (DiffTree *tree)
         free (tree->data.var);
         tree->data.var = nullptr;
         }        
+
+    tree->type = (DiffTreeType) 0;
+    tree->parent = 0;
 
     if (tree->left)
         diff_tree_dtor (tree->left);
@@ -130,7 +131,7 @@ DiffTree *read_expression (const char **str, DiffTree *parent)
      // evil pointer arithmetic is to calculate len of identifier, +1 is for '\0'
     char *name = (char*) calloc (end - *str + 1, sizeof (*name));
     strncpy (name, *str, end - *str);
-    if (!tree->data.var)
+    if (tree->data.var)
         printf ("Something is wrong, var is not empty, it is %p\n", tree->data.var);
         
     tree->data.var = name;
@@ -484,6 +485,8 @@ DiffTreeData new_oper_data (DiffTreeOper oper)
     else                                        \
         printf ("You gave me strange thing to pass, it is %p, L is %p, R is %p\n", (to_pass), L, R);    \
                                                 \
+    to_pass->parent = tree->parent;             \
+                                                \
     R = nullptr;                                \
     L = nullptr;                                \
     diff_tree_dtor (tree);                      \
@@ -512,6 +515,11 @@ int simplify_diff_tree (DiffTree *tree)
             }
         
     calculate_diff_tree (tree, &count);
+
+    do {
+        temp = dt_calc_close (tree);
+        count += temp;
+    } while (temp);
 
     if (tree->type == DT_OPERATOR)
         {
@@ -787,7 +795,7 @@ bool check_diff_tree (DiffTree *tree)
             printf ("Left child is: ");
             print_tree (tree->left); 
             printf ("\nHis parent is "); 
-            print_tree (tree->left->parent); 
+            // print_tree (tree->left->parent); 
             printf ("\n"); 
 
             TELL_SELF;
@@ -802,7 +810,7 @@ bool check_diff_tree (DiffTree *tree)
             printf ("right child is: ");
             print_tree (tree->right); 
             printf ("\nHis parent is "); 
-            print_tree (tree->right->parent); 
+            // print_tree (tree->right->parent); 
             printf ("\n"); 
 
             TELL_SELF;
@@ -816,5 +824,91 @@ bool check_diff_tree (DiffTree *tree)
         return 0;
 
     return 1;    
+    }
+
+#define is_number(node) ( (node)->type == DT_NUMBER )
+#define is_any_num(node) ( (node)->left && (node)->left->type == DT_NUMBER || (node)->right && (node)->right->type == DT_NUMBER )
+
+#define is_op(node, op) ( (node)->type == DT_OPERATOR && (node)->data.oper == (op) )
+
+#define L tree->left
+#define R tree->right
+
+#define PLUS(a,b) ((a) + (b))
+#define MUL(a,b) ((a) * (b))
+
+#define i_dont_name(op_name, op, frst, scnd)                        \
+            if (is_number (frst))                                      \
+                {                                                   \
+                if (is_op (scnd, op_name) && is_any_num (scnd))          \
+                    {                                               \
+                    DiffTree *num = nullptr, *other = nullptr;      \
+                    if (scnd->left->type == DT_NUMBER)                 \
+                        {                                           \
+                        num = scnd->left;                              \
+                        other = scnd->right;                           \
+                        scnd->right = nullptr;                      \
+                        }                                           \
+                    else                                            \
+                        {                                           \
+                        num = scnd->right;                             \
+                        other = scnd->left;                            \
+                        scnd->left = nullptr;                      \
+                        }                                           \
+                                                                    \
+                    frst->data.number = op(frst->data.number, num->data.number);  \
+                    diff_tree_dtor (scnd);                           \
+                    scnd = other;                                      \
+                    other->parent = tree;                           \
+                                                                    \
+                    return 1;                                        \
+                    }                                               \
+                } else do {} while(0)                                                   
+
+int dt_calc_close (DiffTree *tree)
+    {
+    assert (tree);
+
+    if (tree->type == DT_EXPRESSION)
+        return dt_calc_close (tree->left);
+
+    if (tree->type == DT_OPERATOR)
+        {
+        switch (tree->data.oper)
+        {
+        case DTO_INVALID:
+            printf ("Operator is invalid\n");
+            return 0;
+
+        case DTO_PLUS:
+            i_dont_name (DTO_PLUS, PLUS, L, R);
+            i_dont_name (DTO_PLUS, PLUS, R, L);
+            break;
+
+        case DTO_MUL:
+            i_dont_name (DTO_MUL, MUL, L, R);
+            i_dont_name (DTO_MUL, MUL, R, L);
+            break;
+
+        case DTO_POW:
+            if (is_number (R))
+                if (is_op (L, DTO_POW) && is_number (L->right))
+                    {
+                    R->data.number *= L->right->data.number;
+                    printf ("New number is %g\n", R->data.number);
+                    DiffTree *tmp = L->left;
+                    L->left = nullptr;
+                    diff_tree_dtor (L);
+                    L = tmp;
+                    L->parent = tree;
+                    }
+            break;
+
+        default:
+            break;
+        }
+        }
+    
+    return 0;
     }
 

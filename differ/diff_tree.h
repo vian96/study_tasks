@@ -66,3 +66,5 @@ bool is_same_double (double a, double b);
 void diff_tree_dump (DiffTree *tree);
 
 bool check_diff_tree (DiffTree *tree);
+
+int dt_calc_close (DiffTree *tree);
