@@ -192,11 +192,11 @@ void print_tree (const DiffTree *tree)
     switch (tree->type)
     {
     case DT_VAR:
-        printf ("%s", tree->data.var);
+        printf ("(%s)", tree->data.var);
         return;
     
     case DT_NUMBER:
-        printf ("%g", tree->data.number);
+        printf ("(%g)", tree->data.number);
         return;
 
     case DT_OPERATOR:
