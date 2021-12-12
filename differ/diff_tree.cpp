@@ -43,8 +43,10 @@ void diff_tree_dtor (DiffTree *tree)
     if (tree->type == DT_NUMBER || tree->type == DT_OPERATOR)
         tree->data.number = 0; // because number is the biggest part of data
     else if (tree->type == DT_VAR)
-        tree->data.var = 0;
-        
+        {
+        free (tree->data.var);
+        tree->data.var = nullptr;
+        }        
 
     if (tree->left)
         diff_tree_dtor (tree->left);
@@ -128,6 +130,9 @@ DiffTree *read_expression (const char **str, DiffTree *parent)
      // evil pointer arithmetic is to calculate len of identifier, +1 is for '\0'
     char *name = (char*) calloc (end - *str + 1, sizeof (*name));
     strncpy (name, *str, end - *str);
+    if (!tree->data.var)
+        printf ("Something is wrong, var is not empty, it is %p\n", tree->data.var);
+        
     tree->data.var = name;
     *str = end + 1; // +1 because end points to ')'
     DEB ("This identifier is %s\n", tree->data.var);
