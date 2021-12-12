@@ -233,6 +233,15 @@ void print_oper (DiffTreeOper oper)
     printf ("%c", oper);
     }
 
+#define is_op(node, op) ( (node)->type == DT_OPERATOR && (node)->data.oper == (op) )
+
+#define need_brack (oper_precedence (tree->parent->data.oper) < oper_precedence (tree->data.oper) &&        \
+                    tree->parent->data.oper != DTO_DIV      ||                                              \
+                    oper_precedence (tree->parent->data.oper) == oper_precedence (tree->data.oper) &&       \
+                    (tree->parent->data.oper == DTO_MINUS || tree->parent->data.oper == DTO_POW))
+#define op_brack printf (" {\\left( ")
+#define cl_brack printf (" \\right)} ")
+
 void dt_to_latex (DiffTree *tree)
     {
     assert (tree);
@@ -259,27 +268,40 @@ void dt_to_latex (DiffTree *tree)
         switch (tree->data.oper)
         {
         case DTO_MUL:
-            printf (" \\left( ");
+            // Yes. This is python
+            if need_brack
+                op_brack;
             dt_to_latex (tree->left);
-            printf (" \\right) ");
 
             printf (" \\cdot ");
-            
-            printf (" \\left( ");
+
             dt_to_latex (tree->right);
-            printf (" \\right) ");
+            if need_brack
+                cl_brack;
             return;
         
         case DTO_PLUS:
+            if need_brack
+                op_brack;
             dt_to_latex (tree->left);
+
             printf (" + ");
+            
             dt_to_latex (tree->right);
+            if need_brack
+                cl_brack;
             return;
 
         case DTO_MINUS:
+            if need_brack
+                op_brack;
             dt_to_latex (tree->left);
+
             printf (" - ");
+            
             dt_to_latex (tree->right);
+            if need_brack
+                cl_brack;
             return;
 
         case DTO_DIV:
@@ -293,15 +315,17 @@ void dt_to_latex (DiffTree *tree)
             return;
 
         case DTO_POW:
-            printf (" {\\left( ");
+            if need_brack
+                op_brack;
             dt_to_latex (tree->left);
-            printf (" \\right)} ");
             
             printf (" ^ ");
             
             printf ("{");
             dt_to_latex (tree->right);
             printf ("}");
+            if need_brack
+                cl_brack;
             return;
 
         default:
@@ -911,4 +935,32 @@ int dt_calc_close (DiffTree *tree)
     
     return 0;
     }
+
+// TODO add undefs after function
+
+int oper_precedence (DiffTreeOper oper)  
+    {
+    switch (oper)
+    {
+    case DTO_PLUS:
+    case DTO_MINUS:
+        return 4;
+    
+    case DTO_MUL:
+    case DTO_DIV:
+        return 3;
+
+    case DTO_POW:
+        return 2;
+
+    case DTO_INVALID:
+        // TODO do i need inf? they all are already magic numbers
+        return 1<<30;
+
+    default:
+        printf ("Unknown operator %d precedence\n", oper);
+        return 0;
+    }
+    }
+
 

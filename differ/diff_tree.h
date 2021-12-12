@@ -68,3 +68,5 @@ void diff_tree_dump (DiffTree *tree);
 bool check_diff_tree (DiffTree *tree);
 
 int dt_calc_close (DiffTree *tree);
+
+int oper_precedence (DiffTreeOper oper);
