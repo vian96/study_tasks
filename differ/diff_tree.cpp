@@ -1,4 +1,3 @@
-///*
 #include "diff_tree.h"
 
 #include <stdlib.h>
@@ -7,7 +6,7 @@
 #include <math.h>
 #include <string.h>
 
-//*/
+#define NDEBUG
 
 #ifndef NDEBUG
 #define DEB(...) printf (__VA_ARGS__)
@@ -281,16 +280,16 @@ void print_oper (DiffTreeOper oper)
                     tree->parent->data.oper != DTO_DIV      ||                                              \
                     oper_precedence (tree->parent->data.oper) == oper_precedence (tree->data.oper) &&       \
                     (tree->parent->data.oper == DTO_MINUS || tree->parent->data.oper == DTO_POW))
-#define op_brack printf (" {\\left( ")
-#define cl_brack printf (" \\right)} ")
+#define op_brack fprintf (f_out, " {\\left( ")
+#define cl_brack fprintf (f_out, " \\right)} ")
 
-void dt_to_latex (DiffTree *tree)
+void dt_to_latex (DiffTree *tree, FILE *f_out)
     {
     assert (tree);
 
     if (tree->type == DT_EXPRESSION)
         {
-        dt_to_latex (tree->left);
+        dt_to_latex (tree->left, f_out);
         return;
         }
 
@@ -299,11 +298,14 @@ void dt_to_latex (DiffTree *tree)
     switch (tree->type)
     {
     case DT_VAR:
-        printf ("{%s}", tree->data.var);
+        fprintf (f_out, "{%s}", tree->data.var);
         return;
     
     case DT_NUMBER:
-        printf ("{%g}", tree->data.number);
+        if (tree->data.number >= 0)
+            fprintf (f_out, "{%g}", tree->data.number);
+        else
+            fprintf (f_out, "\\left(%g\\right)", tree->data.number);
         return;
 
     case DT_OPERATOR:
@@ -313,11 +315,11 @@ void dt_to_latex (DiffTree *tree)
             // Yes. This is python
             if need_brack
                 op_brack;
-            dt_to_latex (tree->left);
+            dt_to_latex (tree->left, f_out);
 
-            printf (" \\cdot ");
+            fprintf (f_out, " \\cdot ");
 
-            dt_to_latex (tree->right);
+            dt_to_latex (tree->right, f_out);
             if need_brack
                 cl_brack;
             return;
@@ -325,11 +327,11 @@ void dt_to_latex (DiffTree *tree)
         case DTO_PLUS:
             if need_brack
                 op_brack;
-            dt_to_latex (tree->left);
+            dt_to_latex (tree->left, f_out);
 
-            printf (" + ");
+            fprintf (f_out, " + ");
             
-            dt_to_latex (tree->right);
+            dt_to_latex (tree->right, f_out);
             if need_brack
                 cl_brack;
             return;
@@ -337,72 +339,61 @@ void dt_to_latex (DiffTree *tree)
         case DTO_MINUS:
             if need_brack
                 op_brack;
-            dt_to_latex (tree->left);
+            dt_to_latex (tree->left, f_out);
 
-            printf (" - ");
+            fprintf (f_out, " - ");
             
-            dt_to_latex (tree->right);
+            dt_to_latex (tree->right, f_out);
             if need_brack
                 cl_brack;
             return;
 
         case DTO_DIV:
-            printf (" \\frac{ ");
-            dt_to_latex (tree->left);
+            fprintf (f_out, " \\frac{ ");
+            dt_to_latex (tree->left, f_out);
             
-            printf (" }{ ");
+            fprintf (f_out, " }{ ");
             
-            dt_to_latex (tree->right);
-            printf (" } ");
+            dt_to_latex (tree->right, f_out);
+            fprintf (f_out, " } ");
             return;
 
         case DTO_POW:
             if need_brack
                 op_brack;
-            dt_to_latex (tree->left);
+            dt_to_latex (tree->left, f_out);
             
-            printf (" ^ ");
+            fprintf (f_out, " ^ ");
             
-            printf ("{");
-            dt_to_latex (tree->right);
-            printf ("}");
+            fprintf (f_out, "{");
+            dt_to_latex (tree->right, f_out);
+            fprintf (f_out, "}");
             if need_brack
                 cl_brack;
             return;
 
         case DTO_LN:
-            printf (" \\ln\\left(");
-            dt_to_latex (tree->right);
-            printf (" \\right)");
+            fprintf (f_out, " \\ln\\left(");
+            dt_to_latex (tree->right, f_out);
+            fprintf (f_out, " \\right)");
             return;
 
         case DTO_SIN:
-            printf (" \\sin\\left(");
-            dt_to_latex (tree->right);
-            printf (" \\right)");
+            fprintf (f_out, " \\sin\\left(");
+            dt_to_latex (tree->right, f_out);
+            fprintf (f_out, " \\right)");
             return;
 
         case DTO_COS:
-            printf (" \\cos\\left(");
-            dt_to_latex (tree->right);
-            printf (" \\right)");
+            fprintf (f_out, " \\cos\\left(");
+            dt_to_latex (tree->right, f_out);
+            fprintf (f_out, " \\right)");
             return;
 
         default:
             printf ("ERROR: unknown type of operator while latex, i got: %c\n", tree->data.oper);
             return;
         }
-
-        // printf ("(");
-        // if (tree->left)
-        //     print_tree (tree->left);
-        
-        // print_oper (tree->data.oper);
-        // if (tree->right)
-        //     print_tree (tree->right);
-
-        // printf (")");
-        return;
 
     default:
         printf ("\nERROR: unknown type of node while latex, got: %d\n", tree->type);
@@ -653,6 +644,11 @@ int simplify_diff_tree (DiffTree *tree)
             if (is_one (R))
                 pass_to_par (L);
             break;
+
+        case DTO_LN:
+        case DTO_SIN:
+        case DTO_COS:
+            break;
         
         default:
             printf ("ERROR: unknown operator while simplifying: %c\n", tree->data.oper);
@@ -705,22 +701,34 @@ double calculate_diff_tree (DiffTree *tree, int *count)
         
         case DTO_MUL:
             value = L * R;
-            if (is_same_double (L, 0) || is_same_double (R, 0))
-                value = 0;
+            // if (is_same_double (L, 0) || is_same_double (R, 0))
+            //     value = 0;
             break;
         
         case DTO_DIV:
             value = L / R;
-            if (is_same_double (L, 0))
-                value = 0;
+            // if (is_same_double (L, 0))
+            //     value = 0;
             break;
         
         case DTO_POW:
             value = pow (L, R);
-            if (is_same_double (L, 0))
-                value = 0;
-            if (is_same_double (L, 1) || is_same_double (R, 0))
-                value = 1;
+            // if (is_same_double (L, 0))
+            //     value = 0;
+            // if (is_same_double (L, 1) || is_same_double (R, 0))
+            //     value = 1;
+            break;
+
+        case DTO_LN:
+            value = log (R);
+            break;
+
+        case DTO_SIN:
+            value = sin (R);
+            break;
+
+        case DTO_COS:
+            value = cos (R);
             break;
 
         default:

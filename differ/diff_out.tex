@@ -1,0 +1,118 @@
+\documentclass[a4paper,12pt]{article} % добавить leqno в [] для нумерации слева
+\usepackage[a4paper,top=1.3cm,bottom=2cm,left=1.5cm,right=1.5cm,marginparwidth=0.75cm]{geometry}
+% % Работа с русским языком
+\usepackage{cmap}% поиск в PDF
+\usepackage{mathtext} % русские буквы в фомулах
+\usepackage[T2A]{fontenc}% кодировка
+\usepackage[utf8]{inputenc}% кодировка исходного текста
+\usepackage[english,russian]{babel}% локализация и переносы
+
+\usepackage{graphicx}
+\usepackage{setspace}
+
+\usepackage{wrapfig}
+\usepackage{tabularx}
+
+\usepackage{array}
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
+
+\usepackage{hyperref}
+\usepackage[rgb]{xcolor}
+\hypersetup{
+colorlinks=true,urlcolor=blue
+}
+
+% %  Дополнительная работа с математикой
+\usepackage{amsmath,amsfonts,amssymb,amsthm,mathtools} % 0XF.FF9C264B28P-1031MS
+\usepackage{icomma} % "Умная" запятая: $0,2$ --- число, $0, 2$ --- перечисление
+
+% Номера формул
+\mathtoolsset{showonlyrefs=true} % Показывать номера только у тех формул, на которые есть \eqref{} в тексте.
+
+%  Шрифты
+\usepackage{euscript} % Шрифт Евклид
+\usepackage{mathrsfs} % Красивый матшрифт
+
+%  Свои команды
+\DeclareMathOperator{\sgn}{\mathop{sgn}}
+
+%  Перенос знаков в формулах (по Львовскому)
+\newcommand*{\hm}[1]{#1\nobreak\discretionary{}
+{\hbox{$\mathsurround=0pt #1$}}{}}
+
+\usepackage{mathtext}
+\usepackage[T1,T2a]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english, bulgarian, russian]{babel}
+
+% % Заголовок
+\author{Мартынов Иван Сергеевич}
+\title{ Отчёт о выполнении лабораторной работы 1.4.1
+
+Изучение физического маятника
+}
+\date{\today}
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+{\large МОСКОВСКИЙ ФИЗИКО-ТЕХНИЧЕСКИЙ ИНСТИТУТ (НАЦИОНАЛЬНЫЙ ИССЛЕДОВАТЕЛЬСКИЙ УНИВЕРСИТЕТ)}
+\end{center}
+\begin{center}
+{\large Физтех-школа радиотехники и компьютерных технологий}
+\end{center}
+
+
+\vspace{4.5cm}
+{\huge
+\begin{center}
+{\bf Отчёт о выполнении дифференцировании функций}
+\end{center}
+}
+\vspace{2cm}
+\begin{center}
+{\LARGE Автор:\\ Мартынов Иван Сергеевич \\
+\vspace{0.2cm}
+Б01-110}
+\end{center}
+\end{titlepage}
+
+
+\section{Введение}
+
+Дифференцирование -- операция, обратная интегрированию. В данной работе мы будем ее проводить.
+
+\section{Дифференцирование}
+
+Дана следующая функция:\\ 
+ \hspace{1cm}\\ 
+ 
+
+$ f(x) =  \ln\left( \cos\left({x} \right) +  \sin\left( \cos\left({x} ^ {{2}} \right) \right) \right) $\\ 
+ \hspace{1cm}\\ 
+ 
+
+Найдем производную самым очевидным рекурсивным образом:\\ 
+ \hspace{1cm}\\ 
+ 
+
+$ f'(x) =  \frac{ \left(-1\right) \cdot  \sin\left({x} \right) \cdot {1} +  \cos\left( \cos\left({x} ^ {{2}} \right) \right) \cdot \left(-1\right) \cdot  \sin\left({x} ^ {{2}} \right) \cdot {2} \cdot {x} ^ { {\left( {2} - {1} \right)} } \cdot {1} }{  \cos\left({x} \right) +  \sin\left( \cos\left({x} ^ {{2}} \right) \right) }  $\\ 
+ \hspace{1cm}\\ 
+ 
+
+\section{Приведение ответа к адекватному виду}
+
+Применив леммы (1.1.1) и (4.2.3), теорему (3.1.15) и используя определение (13.4.99), получим следующий упрощенный ответ:\\ 
+ \hspace{1cm}\\ 
+ 
+
+$ f'(x) =  \frac{ \left(-1\right) \cdot  \sin\left({x} \right) +  \cos\left( \cos\left({x} ^ {{2}} \right) \right) \cdot \left(-1\right) \cdot  \sin\left({x} ^ {{2}} \right) \cdot {x} \cdot {2} }{  \cos\left({x} \right) +  \sin\left( \cos\left({x} ^ {{2}} \right) \right) }  $\\ 
+ \hspace{1cm}\\ 
+ 
+
+\section{Выводы}
+
+В данной работе была проведена работа с проведениием дифференцирования и изучены способы упрощения математических выражений.
+
+\end{document}

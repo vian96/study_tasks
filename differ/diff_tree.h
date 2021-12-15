@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 const double EPS = 10e-3;
 
 enum DiffTreeType
@@ -52,7 +54,7 @@ void print_tree (const DiffTree *tree);
 
 void print_oper (DiffTreeOper oper);
 
-void dt_to_latex (DiffTree *tree);
+void dt_to_latex (DiffTree *tree, FILE *f_out);
 
 DiffTree *dt_differ (DiffTree *tree, DiffTree *parent = nullptr);
 

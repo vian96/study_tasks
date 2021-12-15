@@ -1,71 +1,37 @@
 #include "diff_tree.h"
 
+#include "tex_text.h"
+
 #include <stdio.h>
 
 int main ()
     {
-    /*
-    const char *expr = "(((x)^(0.6))^(2))", // "((((1)+(((3)+((2)+(x)))+(6)))^(0.6))^(2))", 
-                **to_read = &expr;
+    // Feel free to use any of these expressions (if you are breave enough of course!)
+    // 
+    //"(ln((cos(x))+(sin(cos((x)^(2))))))", 
+    // "((((((x)^(2))+(2))^(0.5))-((((0.5)*((((x)^(2))+(2))^(-0.5)))*((x)*(2)))*((x)+(2))))/(((x)^(2))+(2)))", 
+    //"(((x)+(2))/((((x)^(2))+(2))^(0.5)", 
+    // "((((1)*((x)+(0)))/(1))^(0))", 
+    // "(((27)+((x)*(38)))^((34)/((27)/(4)))",
 
-    DiffTree *tree = read_expression (to_read, nullptr);
-    dt_to_latex (tree);
-    printf ("\n\n");
-    simplify_diff_tree (tree);
-    //printf ("\nTST\n");
-    //dt_calc_close (tree);
-    //diff_tree_dump (tree);
-    printf ("\n\n");
-    dt_to_latex (tree);
-    printf ("\n\n");
-    print_tree (tree);
-    printf ("\n");
-    diff_tree_dtor (tree);
-
-    //*/
-
-    
-    const char *expr = "(sin((x)^(4)))", // "((((((x)^(2))+(2))^(0.5))-((((0.5)*((((x)^(2))+(2))^(-0.5)))*((x)*(2)))*((x)+(2))))/(((x)^(2))+(2)))", //"(((x)+(2))/((((x)^(2))+(2))^(0.5)", // "((((1)*((x)+(0)))/(1))^(0))", // "(((27)+((x)*(38)))^((34)/((27)/(4)))",
+    const char *expr = "(ln((cos(x))+(sin(cos((x)^(2))))))", 
         **to_read = &expr;
 
     DiffTree *tree = read_expression (to_read, nullptr);
-    //print_tree (tree);
-    printf ("\n");
-    // dt_to_latex (tree);
-    printf ("\n\n");
+    
+    FILE *f_out = fopen ("diff_out.tex", "w");
+    fprintf (f_out, tex_text[0]);
 
-    check_diff_tree (tree);
+    dt_to_latex (tree, f_out);
+    fprintf (f_out, tex_text[1]);
 
-    printf ("\n\nStarting differentiating\n");
     DiffTree *diff = dt_differ (tree);
-    printf ("\n\n");
-    dt_to_latex (diff);
-    printf ("\n\n");
-    print_tree (diff);
-    printf ("\n\n");
-
-    if (check_diff_tree (diff))
-        printf ("DIFF IS FULLY OK\n");
-    else   
-        printf ("DIFF IS BROKEN AS HELL!!!!!!!!!\n");
-
-    printf ("\nSimplifying\n\n");
+    dt_to_latex (diff, f_out);
+    fprintf (f_out, tex_text[2]);
     simplify_diff_tree (diff);
-    printf ("\n\n");
-
-    if (check_diff_tree (diff))
-        printf ("simplified IS FULLY OK\n");
-    else   
-        printf ("simplified IS BROKEN AS HELL!!!!!!!!!\n");
-
-    // diff_tree_dump (diff);
-
-    dt_to_latex (diff);
-    printf ("\n\n");
-    print_tree (diff);
-    printf ("\n\n");
-
-    printf ("Start freeing\n");
+    dt_to_latex (diff, f_out);
+    fprintf (f_out, tex_text[3]);
+    
     diff_tree_dtor (diff);
     diff_tree_dtor (tree);
     //*/
