@@ -425,8 +425,10 @@ void dt_to_latex (DiffTree *tree)
 DiffTree *new_dt_op (DiffTreeOper oper, DiffTree *left, DiffTree *right, DiffTree *parent)
     {
     DiffTree *to_ret = new_diff_tree_ctor (DT_OPERATOR, parent, new_oper_data (oper), left, right);
-    to_ret->left->parent = to_ret;
-    to_ret->right->parent = to_ret;
+    if (left)
+        to_ret->left->parent = to_ret;
+    if (right)
+        to_ret->right->parent = to_ret;
     return to_ret;
     }
 
@@ -490,12 +492,12 @@ DiffTree *dt_differ (DiffTree *tree, DiffTree *parent)
 
         case DTO_SIN:
             DEB ("Differentiating sin\n");
-            return new_op (DTO_MUL, new_op (DTO_COS, C (R), nullptr), D (R));
+            return new_op (DTO_MUL, new_op (DTO_COS, nullptr, C (R)), D (R));
 
         case DTO_COS:
             DEB ("Differentiating cos\n");
             return new_op (DTO_MUL, new_const (-1), 
-                    new_op (DTO_MUL, new_op (DTO_SIN, C (R), nullptr), D (R)));
+                        new_op (DTO_MUL, new_op (DTO_SIN, nullptr, C (R)), D (R)));
 
         default:
             printf ("ERROR: unnknown type of operator while differ, it is %c\n", tree->data.oper);
@@ -1045,9 +1047,14 @@ int oper_precedence (DiffTreeOper oper)
     case DTO_POW:
         return 2;
 
+    case DTO_LN:
+    case DTO_SIN:
+    case DTO_COS:
     case DTO_INVALID:
         // TODO do i need inf? they all are already magic numbers
         return 1<<30;
+
+        return 0;
 
     default:
         printf ("Unknown operator %d precedence\n", oper);
