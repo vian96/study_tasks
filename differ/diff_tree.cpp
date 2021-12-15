@@ -115,11 +115,16 @@ DiffTree *read_expression (const char **str, DiffTree *parent)
         return to_ret;
         }
 
-    if (read_dt_oper (str))
+    DiffTreeOper oper = read_dt_oper (str);
+    if (oper)
         {
         DEB ("Found unary operator\n");
-        // unary op
-        // TODO
+        tree->type = DT_OPERATOR;
+        tree->data.oper = oper;
+        tree->right = read_expression (str, tree);;
+
+        (*str)++;   // because it will point to ')' after search
+        return to_ret;
         }
 
     // identifier 
@@ -169,6 +174,18 @@ DiffTreeOper read_dt_oper (const char **str)
     case '^':
         (*str)++;
         return DTO_POW;
+
+    case 'l':
+        (*str) += 2;
+        return DTO_LN;
+
+    case 's':
+        (*str) += 3;
+        return DTO_SIN;
+
+    case 'c':
+        (*str) += 3;
+        return DTO_COS;
 
     default:
         break;
@@ -230,7 +247,32 @@ void print_tree (const DiffTree *tree)
 void print_oper (DiffTreeOper oper)
     {
     // TODO print of more complicated ops
-    printf ("%c", oper);
+    switch (oper)
+    {
+    case DTO_MINUS:
+    case DTO_PLUS:
+    case DTO_MUL:
+    case DTO_DIV:
+    case DTO_POW:
+        printf ("%c", oper);
+        return;
+    
+    case DTO_LN:
+        printf ("ln");
+        return;
+
+    case DTO_SIN:
+        printf ("sin");
+        return;
+
+    case DTO_COS:
+        printf ("cos");
+        return;
+    
+    default:
+        break;
+    }
+    printf ("Error unknown oper while printing tree\n");
     }
 
 #define is_op(node, op) ( (node)->type == DT_OPERATOR && (node)->data.oper == (op) )
@@ -328,6 +370,24 @@ void dt_to_latex (DiffTree *tree)
                 cl_brack;
             return;
 
+        case DTO_LN:
+            printf (" \\ln\\left(");
+            dt_to_latex (tree->right);
+            printf (" \\right)");
+            return;
+
+        case DTO_SIN:
+            printf (" \\sin\\left(");
+            dt_to_latex (tree->right);
+            printf (" \\right)");
+            return;
+
+        case DTO_COS:
+            printf (" \\cos\\left(");
+            dt_to_latex (tree->right);
+            printf (" \\right)");
+            return;
+
         default:
             printf ("ERROR: unknown type of operator while latex, i got: %c\n", tree->data.oper);
             return;
@@ -423,6 +483,19 @@ DiffTree *dt_differ (DiffTree *tree, DiffTree *parent)
             return new_op (DTO_MUL, new_op (DTO_MUL, 
                         C (R), new_op (DTO_POW, 
                             C (L), new_op (DTO_MINUS, C (R), new_const (1)))), D (L));
+
+        case DTO_LN:
+            DEB ("Differentiating ln\n");
+            return new_op (DTO_DIV, D (R), C (R));
+
+        case DTO_SIN:
+            DEB ("Differentiating sin\n");
+            return new_op (DTO_MUL, new_op (DTO_COS, C (R), nullptr), D (R));
+
+        case DTO_COS:
+            DEB ("Differentiating cos\n");
+            return new_op (DTO_MUL, new_const (-1), 
+                    new_op (DTO_MUL, new_op (DTO_SIN, C (R), nullptr), D (R)));
 
         default:
             printf ("ERROR: unnknown type of operator while differ, it is %c\n", tree->data.oper);
@@ -759,6 +832,25 @@ bool check_diff_tree (DiffTree *tree)
             if (!tree->right)
                 {
                 printf ("Binary operator %c doesn't have right child, only left\n", 
+                        tree->data.oper);
+                TELL_SELF;
+                return 0;
+                }
+            break;
+
+        case DTO_LN:
+        case DTO_SIN:
+        case DTO_COS:
+            if (tree->left)
+                {
+                printf ("Unary operator %c has left child\n", 
+                        tree->data.oper);
+                TELL_SELF;
+                return 0;
+                }
+            if (!tree->right)
+                {
+                printf ("Unary operator %c doesn't have right child\n", 
                         tree->data.oper);
                 TELL_SELF;
                 return 0;

@@ -16,6 +16,9 @@ enum DiffTreeOper
     DTO_MUL = '*',
     DTO_DIV = '/',
     DTO_POW = '^',
+    DTO_LN = 'L',
+    DTO_SIN = 's',
+    DTO_COS = 'c',
     };
 
 union DiffTreeData
