@@ -54,6 +54,8 @@ void print_tree (const DiffTree *tree);
 
 void print_oper (DiffTreeOper oper);
 
+bool is_bracket_needed (DiffTree *tree);
+
 void dt_to_latex (DiffTree *tree, FILE *f_out);
 
 DiffTree *dt_differ (DiffTree *tree, DiffTree *parent = nullptr);
@@ -62,7 +64,11 @@ DiffTree *copy_diff_tree (DiffTree *tree, DiffTree *new_parent);
 
 DiffTreeData new_oper_data (DiffTreeOper oper);
 
+int pass_to_parent_dt (DiffTree *tree, DiffTree *to_pass);
+
 int simplify_diff_tree (DiffTree *tree);
+
+int remove_useless_nodes_dt (DiffTree *tree);
 
 double calculate_diff_tree (DiffTree *tree, int *count = nullptr);
 

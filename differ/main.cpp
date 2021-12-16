@@ -14,7 +14,7 @@ int main ()
     // "((((1)*((x)+(0)))/(1))^(0))", 
     // "(((27)+((x)*(38)))^((34)/((27)/(4)))",
 
-    const char *expr = "(ln((cos(x))+(sin(cos((x)^(2))))))", 
+    const char *expr = "(((x)+(2))/((((x)^(2))+(2))^(0.5)",
         **to_read = &expr;
 
     DiffTree *tree = read_expression (to_read, nullptr);
@@ -22,13 +22,18 @@ int main ()
     FILE *f_out = fopen ("diff_out.tex", "w");
     fprintf (f_out, tex_text[0]);
 
+    printf ("i've read\n");
+
     dt_to_latex (tree, f_out);
     fprintf (f_out, tex_text[1]);
 
     DiffTree *diff = dt_differ (tree);
+    printf ("i've differed\n");
     dt_to_latex (diff, f_out);
     fprintf (f_out, tex_text[2]);
+    
     simplify_diff_tree (diff);
+    printf ("i've simplified\n");
     dt_to_latex (diff, f_out);
     fprintf (f_out, tex_text[3]);
     

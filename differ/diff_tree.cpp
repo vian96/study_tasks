@@ -6,7 +6,7 @@
 #include <math.h>
 #include <string.h>
 
-#define NDEBUG
+//#define NDEBUG
 
 #ifndef NDEBUG
 #define DEB(...) printf (__VA_ARGS__)
@@ -74,7 +74,7 @@ DiffTree *read_expression (const char **str, DiffTree *parent)
         }
     (*str)++;
 
-    // const pointer is neede because of to_ret
+    // const pointer is needed because of to_ret
     DiffTree * const tree = new_diff_tree_ctor ((DiffTreeType) 0, parent); 
     DiffTree * to_ret = tree;
     if (parent == nullptr)
@@ -89,7 +89,7 @@ DiffTree *read_expression (const char **str, DiffTree *parent)
     if (sscanf (*str, "%lf", &num))
         {
         // found a number
-       DEB ("Found a number\n");
+        DEB ("Found a number\n");
  
         *str = strchr (*str, ')');
         (*str)++; // because it will point to ')' after search
@@ -132,7 +132,7 @@ DiffTree *read_expression (const char **str, DiffTree *parent)
     tree->type = DT_VAR;
     const char *end = strchr (*str, ')');
     DEB ("Str was at %c and i moved it to %c\n", **str, *end);
-     // evil pointer arithmetic is to calculate len of identifier, +1 is for '\0'
+    // evil pointer arithmetic is to calculate len of identifier, +1 is for '\0'
     char *name = (char*) calloc (end - *str + 1, sizeof (*name));
     strncpy (name, *str, end - *str);
     if (tree->data.var)
@@ -153,27 +153,17 @@ DiffTreeOper read_dt_oper (const char **str)
     DEB ("Reading operator at %s\n", *str);
     switch (**str)
     {
-    // TODO DSL to reduce copy-paste
     case '+':
-        (*str)++;
-        return DTO_PLUS;
-
     case '-':
-        (*str)++;
-        return DTO_MINUS;
-
     case '*':
-        (*str)++;
-        return DTO_MUL;
-
     case '/':
-        (*str)++;
-        return DTO_DIV;
-
     case '^':
+        {
+        DiffTreeOper oper = (DiffTreeOper) (**str);
         (*str)++;
-        return DTO_POW;
-
+        return oper;
+        }
+        
     case 'l':
         (*str) += 2;
         return DTO_LN;
@@ -191,7 +181,6 @@ DiffTreeOper read_dt_oper (const char **str)
     }
     
     DEB ("Haven't found any operator, leaving str where it was\n");
-    //*str = strchr (*str, '('); // some try to save program from break
     return DTO_INVALID;
     }
 
@@ -237,7 +226,8 @@ void print_tree (const DiffTree *tree)
         printf (" was L and R is ");
         if (tree->right)
             print_tree (tree->right);
-        printf ("null");
+        else
+            printf ("null");
         
         break;
     }
@@ -269,19 +259,26 @@ void print_oper (DiffTreeOper oper)
         return;
     
     default:
+        printf ("Error unknown oper while printing tree\n");
         break;
     }
-    printf ("Error unknown oper while printing tree\n");
+    }
+
+bool is_bracket_needed (DiffTree *tree)
+    {
+    assert (tree);
+
+    return oper_precedence (tree->parent->data.oper) < oper_precedence (tree->data.oper) &&        
+            tree->parent->data.oper != DTO_DIV                                          
+            ||                                              
+            oper_precedence (tree->parent->data.oper) == oper_precedence (tree->data.oper) &&       
+            (tree->parent->data.oper == DTO_MINUS || tree->parent->data.oper == DTO_POW);
     }
 
 #define is_op(node, op) ( (node)->type == DT_OPERATOR && (node)->data.oper == (op) )
 
-#define need_brack (oper_precedence (tree->parent->data.oper) < oper_precedence (tree->data.oper) &&        \
-                    tree->parent->data.oper != DTO_DIV      ||                                              \
-                    oper_precedence (tree->parent->data.oper) == oper_precedence (tree->data.oper) &&       \
-                    (tree->parent->data.oper == DTO_MINUS || tree->parent->data.oper == DTO_POW))
-#define op_brack fprintf (f_out, " {\\left( ")
-#define cl_brack fprintf (f_out, " \\right)} ")
+#define op_brack { if (is_bracket_needed (tree)) fprintf (f_out, " {\\left( "); }
+#define cl_brack { if (is_bracket_needed (tree)) fprintf (f_out, " \\right)} "); }
 
 void dt_to_latex (DiffTree *tree, FILE *f_out)
     {
@@ -293,8 +290,6 @@ void dt_to_latex (DiffTree *tree, FILE *f_out)
         return;
         }
 
-    // TODO imrove to have less brackets
-    // TODO create DSL for PRINT_LEFT, CHECK_IF_SUM and so on
     switch (tree->type)
     {
     case DT_VAR:
@@ -305,47 +300,40 @@ void dt_to_latex (DiffTree *tree, FILE *f_out)
         if (tree->data.number >= 0)
             fprintf (f_out, "{%g}", tree->data.number);
         else
-            fprintf (f_out, "\\left(%g\\right)", tree->data.number);
+            fprintf (f_out, "{\\left(%g\\right)}", tree->data.number);
         return;
 
     case DT_OPERATOR:
         switch (tree->data.oper)
         {
         case DTO_MUL:
-            // Yes. This is python
-            if need_brack
-                op_brack;
+            op_brack;
             dt_to_latex (tree->left, f_out);
 
             fprintf (f_out, " \\cdot ");
 
             dt_to_latex (tree->right, f_out);
-            if need_brack
-                cl_brack;
+            cl_brack;
             return;
         
         case DTO_PLUS:
-            if need_brack
-                op_brack;
+            op_brack;
             dt_to_latex (tree->left, f_out);
 
             fprintf (f_out, " + ");
             
             dt_to_latex (tree->right, f_out);
-            if need_brack
-                cl_brack;
+            cl_brack;
             return;
 
         case DTO_MINUS:
-            if need_brack
-                op_brack;
+            op_brack;
             dt_to_latex (tree->left, f_out);
 
             fprintf (f_out, " - ");
             
             dt_to_latex (tree->right, f_out);
-            if need_brack
-                cl_brack;
+            cl_brack;
             return;
 
         case DTO_DIV:
@@ -359,8 +347,7 @@ void dt_to_latex (DiffTree *tree, FILE *f_out)
             return;
 
         case DTO_POW:
-            if need_brack
-                op_brack;
+            op_brack;
             dt_to_latex (tree->left, f_out);
             
             fprintf (f_out, " ^ ");
@@ -368,8 +355,7 @@ void dt_to_latex (DiffTree *tree, FILE *f_out)
             fprintf (f_out, "{");
             dt_to_latex (tree->right, f_out);
             fprintf (f_out, "}");
-            if need_brack
-                cl_brack;
+            cl_brack;
             return;
 
         case DTO_LN:
@@ -401,18 +387,10 @@ void dt_to_latex (DiffTree *tree, FILE *f_out)
     }
     }
 
+#undef is_op
+#undef op_brack
+#undef cl_brack
 
-// TODO move defines to another part of code 
-
-#define L ((tree)->left)
-#define R ((tree)->right)
-#define D(node) (dt_differ (node, parent))
-#define C(node) (copy_diff_tree (node, nullptr))
-
-// TODO create functions
-#define new_const(value) ( new_diff_tree_ctor (DT_NUMBER, parent, {value}) )
-
-// TODO move to different file
 DiffTree *new_dt_op (DiffTreeOper oper, DiffTree *left, DiffTree *right, DiffTree *parent)
     {
     DiffTree *to_ret = new_diff_tree_ctor (DT_OPERATOR, parent, new_oper_data (oper), left, right);
@@ -423,7 +401,14 @@ DiffTree *new_dt_op (DiffTreeOper oper, DiffTree *left, DiffTree *right, DiffTre
     return to_ret;
     }
 
+// TODO move defines to another file
 #define new_op(oper, left, right) ( new_dt_op (oper, left, right, parent) )
+#define new_const(value) ( new_diff_tree_ctor (DT_NUMBER, parent, {value}) )
+
+#define L ((tree)->left)
+#define R ((tree)->right)
+#define D(node) (dt_differ (node, parent))
+#define C(node) (copy_diff_tree (node, nullptr))
 
 DiffTree *dt_differ (DiffTree *tree, DiffTree *parent)
     {
@@ -457,7 +442,7 @@ DiffTree *dt_differ (DiffTree *tree, DiffTree *parent)
 
         case DTO_MINUS:
             DEB ("Differentiating minus\n");
-            return new_op (DTO_MINUS, D (L),D (R));
+            return new_op (DTO_MINUS, D (L), D (R));
         
         case DTO_MUL:
             DEB ("Differentiating mul\n");
@@ -474,8 +459,8 @@ DiffTree *dt_differ (DiffTree *tree, DiffTree *parent)
         case DTO_POW:
             DEB ("Differentiating pow\n");
             return new_op (DTO_MUL, new_op (DTO_MUL, 
-                        C (R), new_op (DTO_POW, 
-                            C (L), new_op (DTO_MINUS, C (R), new_const (1)))), D (L));
+                            C (R), new_op (DTO_POW, 
+                                C (L), new_op (DTO_MINUS, C (R), new_const (1)))), D (L));
 
         case DTO_LN:
             DEB ("Differentiating ln\n");
@@ -506,19 +491,12 @@ DiffTree *dt_differ (DiffTree *tree, DiffTree *parent)
 #undef D
 #undef C
 
-// TODO create functions
 #undef new_const
 #undef new_op
 
 DiffTree *copy_diff_tree (DiffTree *tree, DiffTree *new_parent)
     {
     assert (tree);
-
-    /*
-    DEB ("Creating copy of: ");
-    print_tree (tree);
-    printf ("\n");
-    */
 
     DiffTree *copy = new_diff_tree_ctor (tree->type, new_parent, tree->data);
     
@@ -543,13 +521,16 @@ DiffTreeData new_oper_data (DiffTreeOper oper)
 #define L (tree->left)
 #define R (tree->right)
 
-// TODO create functions for this
+// TODO do i need to create functions for this?
 #define is_number(node, value) ( ((node)->type == DT_NUMBER) && is_same_double((node)->data.number, value) )
 #define is_zero(node) ( is_number((node), 0) )
 #define is_one(node) ( is_number((node), 1) )
 
-// TODO what to do with this enormous define?
-#define pass_to_par(to_pass)    {               \
+int pass_to_parent_dt (DiffTree *tree, DiffTree *to_pass)
+    {
+    assert (tree);
+    assert (to_pass);
+
     DEB ("I got to pass_to parent\n");          \
                                                 \
     if (tree->parent->left == tree)             \
@@ -580,8 +561,11 @@ DiffTreeData new_oper_data (DiffTreeOper oper)
     R = nullptr;                                \
     L = nullptr;                                \
     diff_tree_dtor (tree);                      \
-    return count + 1;                           \
-    }       
+    return 1;                           \
+    }
+
+// TODO what to do with this enormous define?
+#define pass_to_par(to_pass) {return pass_to_parent_dt (tree, to_pass);}
 
 int simplify_diff_tree (DiffTree *tree)
     {
@@ -611,14 +595,23 @@ int simplify_diff_tree (DiffTree *tree)
         count += temp;
     } while (temp);
 
+    do {
+        temp = remove_useless_nodes_dt (tree);
+        count += temp;
+    } while (temp);
+
+    return count;
+    }
+    
+int remove_useless_nodes_dt (DiffTree *tree)
+    {
+    assert (tree);
+
     if (tree->type == DT_OPERATOR)
-        {
-        // DEB ("Simplyfying of operator\n");
         switch (tree->data.oper)
         {
         case DTO_PLUS:
         case DTO_MINUS:
-            // DEB ("Simplyfying pm\n");
             if (is_zero (L))
                 pass_to_par (R);
             if (is_zero (R))
@@ -626,7 +619,6 @@ int simplify_diff_tree (DiffTree *tree)
             break;
 
         case DTO_MUL:
-            // DEB ("Simplyfying mul\n");
             if (is_one (L))
                 pass_to_par (R);
             if (is_one (R))
@@ -634,13 +626,11 @@ int simplify_diff_tree (DiffTree *tree)
             break;
 
         case DTO_DIV:
-            // DEB ("Simplyfying div\n");
             if (is_one (R))
                 pass_to_par (L);
             break;
 
         case DTO_POW:
-            // DEB ("Simplyfying pow\n");
             if (is_one (R))
                 pass_to_par (L);
             break;
@@ -652,13 +642,12 @@ int simplify_diff_tree (DiffTree *tree)
         
         default:
             printf ("ERROR: unknown operator while simplifying: %c\n", tree->data.oper);
-            return count;
-        }
+            return 0;
         }
 
-    return count;
+    return 0;
     }
-    
+
 #undef L
 #undef R
 
