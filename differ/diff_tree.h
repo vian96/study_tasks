@@ -81,3 +81,10 @@ bool check_diff_tree (DiffTree *tree);
 int dt_calc_close (DiffTree *tree);
 
 int oper_precedence (DiffTreeOper oper);
+
+void diff_tree_graph_node(const DiffTree *tree, FILE *gv_out);
+
+void diff_tree_graph_arrow(const DiffTree *tree, FILE *gv_out);
+
+void diff_tree_graph_dump(const DiffTree *tree);
+

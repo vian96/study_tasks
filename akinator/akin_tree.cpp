@@ -89,6 +89,63 @@ void akin_tree_dump (AkinTree *tree, int depth)
         }
     }
 
+void akin_tree_graph_dump (AkinTree *tree)
+    {
+    assert (tree);
+    
+    DEB ("Creating file for graphviz\n");
+    FILE *gv_out = fopen("akin_dump.gv", "w");
+    DEB ("Opened graphviz file\n");
+
+    fprintf(gv_out, "# This is automatically generated dump of akinator\n"
+                    "digraph Tree{\n\n"
+                    "\trankdir=UD;\n\n"
+                    "\tnode[color=\"red\",fontsize=14];\n\n");
+
+    akin_tree_graph_node (tree, gv_out);
+    fprintf(gv_out, "\n");
+
+    akin_tree_graph_arrow (tree, gv_out);
+    fprintf(gv_out, "\n");
+    fprintf(gv_out, "}");
+
+    fclose(gv_out);
+    
+    // TODO it doesn't work because of enccoding of file
+    // system("dot -Tpng akin_dump.gv -o akin_dump.png");
+    }
+
+void akin_tree_graph_node (AkinTree *tree, FILE *f_out)
+    {
+    assert (tree);
+    assert (f_out);
+
+    fprintf(f_out, "\t%lu[shape=record, style=\"filled\", fillcolor=\"yellow\", label=\"%s\"];\n", 
+            tree, tree->data);
+
+    if (tree->left != nullptr) 
+        akin_tree_graph_node (tree->left, f_out);
+    if (tree->right != nullptr) 
+        akin_tree_graph_node (tree->right, f_out);
+    }
+
+void akin_tree_graph_arrow (AkinTree *tree, FILE *f_out)
+    {
+    assert (tree);
+    assert (f_out);
+
+    if (tree->left != nullptr && tree->right != nullptr)
+        {
+        fprintf(f_out, "\t%lu -> %lu[color=\"green\", label=\"NO\", fontsize=12]\n", tree, tree->left);
+        fprintf(f_out, "\t%lu -> %lu[color=\"blue\", label=\"YES\", fontsize=12]\n", tree, tree->right);
+        }
+
+    if (tree->left) 
+        akin_tree_graph_arrow (tree->left, f_out);
+    if (tree->right)
+        akin_tree_graph_arrow (tree->right, f_out);
+    }
+
 void write_tree_to_base (AkinTree *tree, FILE *f_out, int depth)
     {
     assert (f_out);

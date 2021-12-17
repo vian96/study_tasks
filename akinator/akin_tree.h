@@ -33,6 +33,12 @@ void free_akin_tree (AkinTree *tree);
 
 void akin_tree_dump (AkinTree *tree, int depth = 0);
 
+void akin_tree_graph_dump (AkinTree *tree);
+
+void akin_tree_graph_node (AkinTree *tree, FILE *f_out);
+
+void akin_tree_graph_arrow (AkinTree *tree, FILE *f_out);
+
 void write_tree_to_base (AkinTree *tree, FILE *f_out, int depth = 0);
 
 #endif // AKINATOR_AKIN_TREE_H

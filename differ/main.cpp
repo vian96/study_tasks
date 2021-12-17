@@ -24,6 +24,8 @@ int main ()
 
     printf ("i've read\n");
 
+    diff_tree_graph_dump (tree);
+
     dt_to_latex (tree, f_out);
     fprintf (f_out, tex_text[1]);
 
@@ -31,11 +33,13 @@ int main ()
     printf ("i've differed\n");
     dt_to_latex (diff, f_out);
     fprintf (f_out, tex_text[2]);
+    diff_tree_graph_dump (diff);
     
     simplify_diff_tree (diff);
     printf ("i've simplified\n");
     dt_to_latex (diff, f_out);
     fprintf (f_out, tex_text[3]);
+    diff_tree_graph_dump (diff);
     
     diff_tree_dtor (diff);
     diff_tree_dtor (tree);

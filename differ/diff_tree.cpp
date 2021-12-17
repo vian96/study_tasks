@@ -1059,4 +1059,83 @@ int oper_precedence (DiffTreeOper oper)
     }
     }
 
+void diff_tree_graph_node(const DiffTree *tree, FILE *gv_out)
+    {
+    assert(tree);
+    assert(gv_out);
+
+    fprintf(gv_out, "\t%lu[shape=record, label=\"", tree);
+
+    switch (tree->type)
+    {
+    case DT_EXPRESSION:
+        fprintf (gv_out, "None");
+        break;
+    
+    case DT_NUMBER:
+        fprintf (gv_out, "%f", tree->data.number);
+        break;
+
+    case DT_OPERATOR:
+        fprintf (gv_out, "%c", tree->data.oper);
+        break;
+
+    case DT_VAR:
+        fprintf (gv_out, "%s", tree->data.var);
+        break;
+
+    default:
+        fprintf (gv_out, "Unknown\n");
+        break;
+    }
+    
+    fprintf (gv_out, "\"];\n");
+
+    if (tree->left) 
+        diff_tree_graph_node (tree->left, gv_out);
+    if (tree->right) 
+        diff_tree_graph_node (tree->right, gv_out);
+    }
+
+void diff_tree_graph_arrow(const DiffTree *tree, FILE *gv_out)
+    {
+    assert(tree);
+    assert(gv_out);
+
+    if (tree->left)
+        fprintf(gv_out, "\t%lu -> %lu[fontsize=12]\n", tree, tree->left);
+
+    if (tree->right)
+        fprintf(gv_out, "\t%lu -> %lu[fontsize=12]\n", tree, tree->right);
+
+    if (tree->left)
+        diff_tree_graph_arrow (tree->left, gv_out);
+    if (tree->right)
+        diff_tree_graph_arrow (tree->right, gv_out);
+    }
+
+void diff_tree_graph_dump(const DiffTree *tree)
+    {
+    FILE *gv_out = fopen ("diff_tree.gv", "w");
+
+    fprintf (gv_out, "# This is automatically generated dump of differentiation tree\n"
+                    "digraph Tree{\n\n"
+                    "\trankdir=UD;\n\n"
+                    "\tnode[color=\"red\",fontsize=14];\n\n");
+
+    diff_tree_graph_node (tree->left, gv_out);
+
+    fprintf (gv_out, "\n");
+
+    diff_tree_graph_arrow (tree->left, gv_out);
+
+    fprintf (gv_out, "\n");
+
+    fprintf (gv_out, "}");
+
+    fclose (gv_out);
+
+    system ("dot -Tpng diff_tree.gv -o diff_tree.png && diff_tree.png");
+    }
+
 

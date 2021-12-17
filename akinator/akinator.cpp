@@ -101,6 +101,13 @@ void akinator_app ()
         free (name2);
         }
 
+    AT_SAY ("Хочешь визуальный дамп?\n");
+    ans = ask_yes_no ("");
+    if (ans == 'y')
+        {
+        akin_tree_graph_dump (tree);
+        }
+
     AT_SAY ("Пока! Удачи на сессии!\n");
     free_akin_tree (tree);
     free_file_text (&base);

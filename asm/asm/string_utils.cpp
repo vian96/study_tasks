@@ -75,13 +75,13 @@ void prepare_file_text (FileText *code) {
 }
 
 bool is_equal_words (const char *a, const char *b) {
-    while (toupper(*a) == toupper(*b) && !isblank(*a) && !isblank(*b) && *a && *b) {
+    while (toupper(*a) == toupper(*b) && isalnum(*a) && isalnum(*b) && *a && *b) {
         a++; 
         b++;
     }
 
-    // they're equal or one of them is '\0' the other one is ' '
-    if (toupper(*a) == toupper(*b) || (*a * *b == 0 && *a + *b == ' '))
+    // they're equal if they both reach end of word
+    if (!isalnum (*a) && !isalnum (*b))
         return 1;
 
     return 0;
