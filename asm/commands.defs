@@ -1,7 +1,15 @@
 
-// DEF_CMD_ (num, name, args, code)
+#define UNARY(cnt_, name_, sign)    DEF_CMD_ (cnt_, name_, 0, { \
+                                        int a_ = POP;           \
+                                        PUSH (sign (a_));       \
+                                    })
 
-// TODO make numbers more clear ?
+#define COMP(cnt_, name_, sign_)    DEF_CMD_ (cnt_, name_, 0, {              \
+                                        int a_ = POP; int b_ = POP;     \
+                                        PUSH (b_ sign_ a_);                \
+                                    })
+
+// DEF_CMD_ (num, name, args, code)
 
 DEF_CMD_ (1, PUSH, 1, {PUSH (ARG);})
 
@@ -114,3 +122,19 @@ DEF_CMD_ (24, POW, 0, {
     PUSH ( pow (b_, a_));
 })
 
+COMP (25, EQ, ==)
+COMP (26, NEQ, !=)
+COMP (27, LEQ, <=)
+COMP (28, GEQ, >=)
+COMP (29, LESS, <)
+COMP (30, GREAT, >)
+COMP (31, AND, &&)
+COMP (32, OR, ||)
+
+UNARY (33, NOT, !)
+UNARY (34, SIN, sin)
+UNARY (35, COS, cos)
+UNARY (36, LN, log)
+
+#undef UNARY
+#undef COMP

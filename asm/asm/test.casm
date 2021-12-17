@@ -12,6 +12,13 @@ in
     add
     pop cx
 pop [cx]
+in
+; getting var e
+    push bx
+    push 1
+    add
+    pop cx
+pop [cx]
 push 34
 ; getting var g
     push bx
@@ -22,8 +29,12 @@ push [cx]
 push 7
 mul
 add
+push 0
+great
+push 7
 push 8
 add
+eq
 ; getting var x
     push bx
     push 1
@@ -36,4 +47,6 @@ pop [cx]
     add
     pop cx
 push [cx]
+push 42
+leq
 out
