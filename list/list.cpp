@@ -412,31 +412,31 @@ ListDataT get_list_data (const List *list, int index)
     {
     assert (list);
 
-    ListPart *temp = get_list_elem (list, index);
+    int temp = get_list_elem (list, index);
     if (!temp)
         return 0;
     
-    return temp->data;
+    return list->parts[temp].data;
     }
 
-ListPart *get_list_elem (const List *list, int index) 
+int get_list_elem (const List *list, int index) 
     {
     assert (list);
 
     if (index >= list->size) 
         {
         printf ("Needed index is greater than size of list\n");
-        return nullptr;
+        return 0;
         }
 
     if (list->is_sorted)
-        return list->parts + list->head + index;
+        return list->head + index;
 
     int ptr = list->head;
     if (ptr == -1) 
         {
         printf ("You're trying to access elements from empty list\n");
-        return nullptr;
+        return 0;
         }
 
     for (int i = 0; i < index; i++)
@@ -445,10 +445,10 @@ ListPart *get_list_elem (const List *list, int index)
     if (ptr == 0) 
         {
         printf ("Some error, iterating list resulted into out of bounds\n");
-        return nullptr;
+        return 0;
         }
 
-    return list->parts + ptr;
+    return ptr;
     }
 
 int get_free_elem (List *list) 

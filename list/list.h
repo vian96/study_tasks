@@ -40,7 +40,7 @@ void list_remove_ptr (List *list, int ptr);
 
 ListDataT get_list_data (const List *list, int index);
 
-ListPart *get_list_elem (const List *list, int index);
+int get_list_elem (const List *list, int index);
 
 int get_free_elem (List *list);
 

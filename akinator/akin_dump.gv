@@ -5,47 +5,47 @@ digraph Tree{
 
 	node[color="red",fontsize=14];
 
-	2949197776[shape=record, style="filled", fillcolor="yellow", label="животное"];
-	2950195968[shape=record, style="filled", fillcolor="yellow", label="живет в болоте"];
-	2950196128[shape=record, style="filled", fillcolor="yellow", label="летает"];
-	2950196288[shape=record, style="filled", fillcolor="yellow", label="стрекоза"];
-	2950196448[shape=record, style="filled", fillcolor="yellow", label="лягушка"];
-	2950196608[shape=record, style="filled", fillcolor="yellow", label="живет в дереве"];
-	2950196768[shape=record, style="filled", fillcolor="yellow", label="белка"];
-	2950196928[shape=record, style="filled", fillcolor="yellow", label="позвоночное"];
-	2950197088[shape=record, style="filled", fillcolor="yellow", label="долбит"];
-	2950197248[shape=record, style="filled", fillcolor="yellow", label="дятел"];
-	2950197408[shape=record, style="filled", fillcolor="yellow", label="Полторашка"];
-	2950197568[shape=record, style="filled", fillcolor="yellow", label="муха"];
-	2950197728[shape=record, style="filled", fillcolor="yellow", label="ведет матан"];
-	2950197968[shape=record, style="filled", fillcolor="yellow", label="ведет допсем"];
-	2950198016[shape=record, style="filled", fillcolor="yellow", label="Скубачевский"];
-	2950198640[shape=record, style="filled", fillcolor="yellow", label="А.Ю."];
-	2950198832[shape=record, style="filled", fillcolor="yellow", label="все знают"];
-	2950198448[shape=record, style="filled", fillcolor="yellow", label="Овчинкин"];
-	2950198064[shape=record, style="filled", fillcolor="yellow", label="учат два года"];
-	2950198256[shape=record, style="filled", fillcolor="yellow", label="матан"];
-	2950198352[shape=record, style="filled", fillcolor="yellow", label="неовчинкин"];
+	2914791376[shape=record, style="filled", fillcolor="yellow", label="животное"];
+	2916117248[shape=record, style="filled", fillcolor="yellow", label="живет в болоте"];
+	2916117408[shape=record, style="filled", fillcolor="yellow", label="летает"];
+	2916117568[shape=record, style="filled", fillcolor="yellow", label="стрекоза"];
+	2916117728[shape=record, style="filled", fillcolor="yellow", label="лягушка"];
+	2916117888[shape=record, style="filled", fillcolor="yellow", label="живет в дереве"];
+	2916118048[shape=record, style="filled", fillcolor="yellow", label="белка"];
+	2916118208[shape=record, style="filled", fillcolor="yellow", label="позвоночное"];
+	2916118368[shape=record, style="filled", fillcolor="yellow", label="долбит"];
+	2916118528[shape=record, style="filled", fillcolor="yellow", label="дятел"];
+	2916118688[shape=record, style="filled", fillcolor="yellow", label="Полторашка"];
+	2916118848[shape=record, style="filled", fillcolor="yellow", label="муха"];
+	2916119008[shape=record, style="filled", fillcolor="yellow", label="ведет матан"];
+	2916119776[shape=record, style="filled", fillcolor="yellow", label="ведет допсем"];
+	2916119872[shape=record, style="filled", fillcolor="yellow", label="Скубачевский"];
+	2916119536[shape=record, style="filled", fillcolor="yellow", label="А.Ю."];
+	2916119920[shape=record, style="filled", fillcolor="yellow", label="все знают"];
+	2916119968[shape=record, style="filled", fillcolor="yellow", label="Овчинкин"];
+	2916119824[shape=record, style="filled", fillcolor="yellow", label="учат два года"];
+	2916120016[shape=record, style="filled", fillcolor="yellow", label="матан"];
+	2916120064[shape=record, style="filled", fillcolor="yellow", label="неовчинкин"];
 
-	2949197776 -> 2950195968[color="green", label="NO", fontsize=12]
-	2949197776 -> 2950197728[color="blue", label="YES", fontsize=12]
-	2950195968 -> 2950196128[color="green", label="NO", fontsize=12]
-	2950195968 -> 2950196608[color="blue", label="YES", fontsize=12]
-	2950196128 -> 2950196288[color="green", label="NO", fontsize=12]
-	2950196128 -> 2950196448[color="blue", label="YES", fontsize=12]
-	2950196608 -> 2950196768[color="green", label="NO", fontsize=12]
-	2950196608 -> 2950196928[color="blue", label="YES", fontsize=12]
-	2950196928 -> 2950197088[color="green", label="NO", fontsize=12]
-	2950196928 -> 2950197568[color="blue", label="YES", fontsize=12]
-	2950197088 -> 2950197248[color="green", label="NO", fontsize=12]
-	2950197088 -> 2950197408[color="blue", label="YES", fontsize=12]
-	2950197728 -> 2950197968[color="green", label="NO", fontsize=12]
-	2950197728 -> 2950198832[color="blue", label="YES", fontsize=12]
-	2950197968 -> 2950198016[color="green", label="NO", fontsize=12]
-	2950197968 -> 2950198640[color="blue", label="YES", fontsize=12]
-	2950198832 -> 2950198448[color="green", label="NO", fontsize=12]
-	2950198832 -> 2950198064[color="blue", label="YES", fontsize=12]
-	2950198064 -> 2950198256[color="green", label="NO", fontsize=12]
-	2950198064 -> 2950198352[color="blue", label="YES", fontsize=12]
+	2914791376 -> 2916117248[color="green", label="NO", fontsize=12]
+	2914791376 -> 2916119008[color="blue", label="YES", fontsize=12]
+	2916117248 -> 2916117408[color="green", label="NO", fontsize=12]
+	2916117248 -> 2916117888[color="blue", label="YES", fontsize=12]
+	2916117408 -> 2916117568[color="green", label="NO", fontsize=12]
+	2916117408 -> 2916117728[color="blue", label="YES", fontsize=12]
+	2916117888 -> 2916118048[color="green", label="NO", fontsize=12]
+	2916117888 -> 2916118208[color="blue", label="YES", fontsize=12]
+	2916118208 -> 2916118368[color="green", label="NO", fontsize=12]
+	2916118208 -> 2916118848[color="blue", label="YES", fontsize=12]
+	2916118368 -> 2916118528[color="green", label="NO", fontsize=12]
+	2916118368 -> 2916118688[color="blue", label="YES", fontsize=12]
+	2916119008 -> 2916119776[color="green", label="NO", fontsize=12]
+	2916119008 -> 2916119920[color="blue", label="YES", fontsize=12]
+	2916119776 -> 2916119872[color="green", label="NO", fontsize=12]
+	2916119776 -> 2916119536[color="blue", label="YES", fontsize=12]
+	2916119920 -> 2916119968[color="green", label="NO", fontsize=12]
+	2916119920 -> 2916119824[color="blue", label="YES", fontsize=12]
+	2916119824 -> 2916120016[color="green", label="NO", fontsize=12]
+	2916119824 -> 2916120064[color="blue", label="YES", fontsize=12]
 
 }

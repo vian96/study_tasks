@@ -1,0 +1,39 @@
+; This file was autmatically compiled by Uzh lang compiler
+; register cx is used for temporary using of var address
+
+jmp :main
+
+
+:main
+in
+; getting var g
+    push bx
+    push 0
+    add
+    pop cx
+pop [cx]
+push 34
+; getting var g
+    push bx
+    push 0
+    add
+    pop cx
+push [cx]
+push 7
+mul
+add
+push 8
+add
+; getting var x
+    push bx
+    push 1
+    add
+    pop cx
+pop [cx]
+; getting var x
+    push bx
+    push 1
+    add
+    pop cx
+push [cx]
+out

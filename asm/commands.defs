@@ -103,3 +103,14 @@ DEF_CMD_ (20, MEOW, 0, {printf ("Meow!\n");})
 DEF_CMD_ (21, DATAINT, 1, {PUSH (*(int*) (cpu->bin + ARG));})
 
 DEF_CMD_ (22, DATACHAR, 1, {PUSH (cpu->bin[ARG]);})
+
+DEF_CMD_ (23, SUB, 0, {
+    int a_ = POP; int b_ = POP; 
+    PUSH (b_ - a_);
+})
+
+DEF_CMD_ (24, POW, 0, {
+    int a_ = POP; int b_ = POP; 
+    PUSH ( pow (b_, a_));
+})
+

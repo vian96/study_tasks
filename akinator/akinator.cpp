@@ -271,71 +271,51 @@ int akin_seek_def_stack (AkinTree *tree, const char *name, Stack *stk_names = nu
     return 1;
     }
 
+#define FAIL_SEEK(ind_) if (!akin_seek_def_stack (tree, name##ind_, stk_names##ind_, stk_is##ind_))  \
+        {                                                                             \
+        AT_SAY ("Я не нашла, кто такой %s, поэтому не буду искать разницу\n", name##ind_); \
+        stack_dtor (stk_names1);            \
+        free (stk_names1);                  \
+        stack_dtor (stk_is1);               \
+        free (stk_is1);                     \
+        stack_dtor (stk_names2);            \
+        free (stk_names2);                  \
+        stack_dtor (stk_is2);               \
+        free (stk_is2);                     \
+        return;                             \
+        }
+
+#define INIT_STK(ind_)  Stack *stk_names##ind_ = (Stack *) calloc (1, sizeof (*stk_names##ind_));         \
+                        stack_ctor (stk_names##ind_, 1, sizeof (char*));                             \
+                        Stack *stk_is##ind_ = (Stack *) calloc (1, sizeof (*stk_is##ind_));               \
+                        stack_ctor (stk_is##ind_, 1, sizeof (int));       
+
+#define DTOR_STK(ind_)  stack_dtor (stk_names##ind_);        \
+                        free (stk_names##ind_);              \
+                        stack_dtor (stk_is##ind_);           \
+                        free (stk_is##ind_);
+
+#define PRINT_PROP(ind_)    if (status##ind_[i])                         \
+                                AT_SAY ("которое %s ", names##ind_[i]);  \
+                            else                                    \
+                                AT_SAY ("которое не %s ", names##ind_[i]);
+
 void akin_diff_def (AkinTree *tree, const char *name1, const char *name2)
     {
     assert (tree);
     assert (name1);
     assert (name2);
 
-    // TODO why so much copy-paste?
-    Stack *stk_names1 = (Stack *) calloc (1, sizeof (*stk_names1));
-    stack_ctor (stk_names1, 1, sizeof (char*));
-    Stack *stk_is1 = (Stack *) calloc (1, sizeof (*stk_is1));
-    stack_ctor (stk_is1, 1, sizeof (int));
-
-    Stack *stk_names2 = (Stack *) calloc (1, sizeof (*stk_names2));
-    stack_ctor (stk_names2, 1, sizeof (char*));
-    Stack *stk_is2 = (Stack *) calloc (1, sizeof (*stk_is2));
-    stack_ctor (stk_is2, 1, sizeof (int));
-
-    // TODO how to avoid this copy-paste with free?
-    if (!akin_seek_def_stack (tree, name1, stk_names1, stk_is1))
-        {
-        AT_SAY ("Я не нашла, кто такой %s, поэтому не буду искать разницу\n", name1);
-
-        stack_dtor (stk_names1);
-        free (stk_names1);
-        stack_dtor (stk_is1);
-        free (stk_is1);
-        
-        stack_dtor (stk_names2);
-        free (stk_names2);
-        stack_dtor (stk_is2);
-        free (stk_is2);
-        
-        return;
-        }
-    if (!akin_seek_def_stack (tree, name2, stk_names2, stk_is2))
-        {
-        AT_SAY ("Я не нашла, кто такой %s, поэтому не буду искать разницу\n", name2);
-
-        stack_dtor (stk_names1);
-        free (stk_names1);
-        stack_dtor (stk_is1);
-        free (stk_is1);
-        
-        stack_dtor (stk_names2);
-        free (stk_names2);
-        stack_dtor (stk_is2);
-        free (stk_is2);
-        
-        return;
-        }
+    INIT_STK (1);
+    INIT_STK (2);
+    FAIL_SEEK (1);
+    FAIL_SEEK (2);
 
     DEB ("I found definitions, now i go next\n");
-
-    stack_dump (stk_names1, stdout, MAX_DUMP);
-    stack_dump (stk_is1, stdout, MAX_DUMP);
-    stack_dump (stk_names2, stdout, MAX_DUMP);
-    stack_dump (stk_is2, stdout, MAX_DUMP);
-    
     const char **names1 = (const char**) stk_names1->arr;
     const int *status1 = (const int*) stk_is1->arr;
-    
     const char **names2 = (const char**) stk_names2->arr;
     const int *status2 = (const int*) stk_is2->arr;
-
-    // printf ("%s and %s are same at such things as: ", name1, name2);
 
     int i = 0;
     if (*status1 == *status2)
@@ -343,10 +323,7 @@ void akin_diff_def (AkinTree *tree, const char *name1, const char *name2)
         AT_SAY ("%s и %s схожи тем, что они кто-то ", name1, name2);
         while (status1[i] == status2[i] && i < stk_is1->size && i < stk_is2->size)
             {
-                if (status1[i])
-                    AT_SAY ("которое %s ", names1[i]);
-                else
-                    AT_SAY ("которое не %s ", names1[i]);
+                PRINT_PROP(1);
                 i++;
             }
         AT_SAY ("НО! они отличаются тем, что \n");
@@ -358,31 +335,21 @@ void akin_diff_def (AkinTree *tree, const char *name1, const char *name2)
     int begin_diff = i;
     AT_SAY ("%s это кто-то ", name1);
     for (; i < stk_is1->size; i++)
-        if (status1[i])
-            AT_SAY ("которое %s ", names1[i]);
-        else
-            AT_SAY ("которое не %s ", names1[i]);
+        PRINT_PROP(1);
 
     i = begin_diff;
     AT_SAY ("\nНО %s это кто-то ", name2);
     for (; i < stk_is2->size; i++)
-        if (status2[i])
-            AT_SAY ("которое %s ", names2[i]);
-        else
-            AT_SAY ("которое не %s ", names2[i]);    
-
+        PRINT_PROP(2);
+   
     AT_SAY ("\nИ эта вся разница между ними\n");
-
-    stack_dtor (stk_names1);
-    free (stk_names1);
-    stack_dtor (stk_is1);
-    free (stk_is1);
-    
-    stack_dtor (stk_names2);
-    free (stk_names2);
-    stack_dtor (stk_is2);
-    free (stk_is2);
+    DTOR_STK(1);
+    DTOR_STK(2);
     }
+
+#undef FAIL_SEEK
+#undef INIT_STK
+#undef DTOR_STK
 
 
 
