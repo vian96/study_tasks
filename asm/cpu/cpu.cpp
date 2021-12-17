@@ -231,7 +231,7 @@ int *get_arg (const char *bin, Cpu *cpu) {
 
     case ARG_RAM:
         if (data < 0 || data >= NUM_RAM) {
-            printf ("Out of boundaries of ram, trying to access %d, ram size is %d, exiting cpu\n", data, NUM_RAM);
+            printf ("Out of boundaries of ram, trying to access %d from arg, ram size is %d, exiting cpu\n", data, NUM_RAM);
             return nullptr;
         }
 
@@ -250,7 +250,7 @@ int *get_arg (const char *bin, Cpu *cpu) {
         }
 
         if (cpu->regs[data] < 0 || cpu->regs[data] >= NUM_RAM) {
-            printf ("Out of boundaries of ram, trying to access %d, ram size is %d, exiting cpu\n", data, NUM_RAM);
+            printf ("Out of boundaries of ram, trying to access %d from reg, ram size is %d, exiting cpu\n", cpu->regs[data], NUM_RAM);
             return nullptr;
         }
 
