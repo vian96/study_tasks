@@ -19,6 +19,7 @@ void akinator_app ()
 
     FileText base = read_text_file (base_file);
     fclose (base_file);
+    base_file = nullptr;
     StringRef *temp = base.strings; 
     AkinTree *tree = read_akin_node (&temp);
 
@@ -261,19 +262,7 @@ int akin_seek_def_stack (AkinTree *tree, const char *name, Stack *stk_names = nu
     return 1;
     }
 
-#define FAIL_SEEK(ind_) if (!akin_seek_def_stack (tree, name##ind_, stk_names##ind_, stk_is##ind_))  \
-        {                                                                             \
-        AT_SAY ("Я не нашла, кто такой %s, поэтому не буду искать разницу\n", name##ind_); \
-        stack_dtor (stk_names1);            \
-        free (stk_names1);                  \
-        stack_dtor (stk_is1);               \
-        free (stk_is1);                     \
-        stack_dtor (stk_names2);            \
-        free (stk_names2);                  \
-        stack_dtor (stk_is2);               \
-        free (stk_is2);                     \
-        return;                             \
-        }
+// TODO is it okay to leave defines like this?
 
 #define INIT_STK(ind_)  Stack *stk_names##ind_ = (Stack *) calloc (1, sizeof (*stk_names##ind_));         \
                         stack_ctor (stk_names##ind_, 1, sizeof (char*));                             \
@@ -284,6 +273,13 @@ int akin_seek_def_stack (AkinTree *tree, const char *name, Stack *stk_names = nu
                         free (stk_names##ind_);              \
                         stack_dtor (stk_is##ind_);           \
                         free (stk_is##ind_);
+
+#define FAIL_SEEK(ind_) if (!akin_seek_def_stack (tree, name##ind_, stk_names##ind_, stk_is##ind_))  \
+                            {                                                                             \
+                            AT_SAY ("Я не нашла, кто такой %s, поэтому не буду искать разницу\n", name##ind_); \
+                            DTOR_STK(1);                \
+                            DTOR_STK(2);                \
+                            }
 
 #define PRINT_PROP(ind_)    if (status##ind_[i])                         \
                                 AT_SAY ("которое %s ", names##ind_[i]);  \
