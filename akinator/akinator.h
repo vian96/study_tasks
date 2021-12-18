@@ -7,7 +7,13 @@
 
 void akinator_app ();
 
+void guess_akin (AkinTree *tree);
+
 void play_akin (AkinTree *tree);
+
+void play_def (AkinTree *tree);
+
+void play_dif (AkinTree *tree);
 
 void clear_input_buffer ();
 

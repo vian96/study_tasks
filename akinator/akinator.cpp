@@ -13,10 +13,10 @@
 
 void akinator_app ()
     {
-    // TODO divide into smaller functions
     FILE *base_file = fopen_err ("akin_db.base", "r");
     if (!base_file)
         return;
+
     FileText base = read_text_file (base_file);
     fclose (base_file);
     StringRef *temp = base.strings; 
@@ -27,93 +27,25 @@ void akinator_app ()
     printf ("\n\n");
 
     AT_SAY ("Самый умный акинтор приветствует тебя! У меня маленькая база данных, но я всё равно умнее тебя!\n\n");
-    char ans = ask_yes_no ("Хочешь поиграть?\n");
-    
-    if (ans == 'y')
-        {
-        while (true)
-            {
-            play_akin (tree);
-            int ans = ask_yes_no ("Хочешь поиграть еще раз?\n");
-            if (ans != 'y')
-                break;
-            }
 
-        AT_SAY ("\nХорошо, теперь дерево такое:\n\n");
-        akin_tree_dump (tree);
+    if (ask_yes_no ("Хочешь поиграть?\n") == 'y')
+        play_akin (tree);
 
-        AT_SAY ("\n\nХочешь сохранить базу данных в файл?\n");
-        ans = ask_yes_no ("Сохранить? ");
-        if (ans == 'y')
-            {
-            FILE *f_out = fopen ("akin_db.base", "w");
-            write_tree_to_base (tree, f_out);
-            AT_SAY ("Закончила сохранение\n");
-            }
-        }
-    
+    if (ask_yes_no ("Хочешь найти определение?\n") == 'y')
+        play_def (tree);
 
-    AT_SAY ("Хочешь найти определение?\n");
-    ans = ask_yes_no ("");
-    if (ans == 'y')
-        {
-        char *name = (char*) calloc (MAX_AKIN_NAME_LEN, sizeof (*name));
-        while (true)
-            {            
-            AT_SAY ("Введи имя: ");
-            fgets (name, MAX_AKIN_NAME_LEN, stdin);
-            name[strcspn(name, "\n")] = 0; // removes \n at end
+    if (ask_yes_no ("Хочешь узнать в чем отличие?\n") == 'y')
+        play_dif (tree);
 
-            akin_seek_def (tree, name);
-            
-            int ans = ask_yes_no ("Хочешь найти определение еще раз?\n");
-            if (ans != 'y')
-                break;
-            }
-        free (name);
-        }
-
-    AT_SAY ("Хочешь узнать в чем отличие?\n");
-    ans = ask_yes_no ("");
-    if (ans == 'y')
-        {
-        char *name1 = (char*) calloc (MAX_AKIN_NAME_LEN, sizeof (*name1));
-        char *name2 = (char*) calloc (MAX_AKIN_NAME_LEN, sizeof (*name2));
-    
-        while (true)
-            {
-            AT_SAY ("Введи первое имя: ");
-            fgets (name1, MAX_AKIN_NAME_LEN, stdin);
-            name1[strcspn(name1, "\n")] = 0; // removes \n at end
-            
-            AT_SAY ("Введи второе имя: ");
-            fgets (name2, MAX_AKIN_NAME_LEN, stdin);
-            name2[strcspn(name2, "\n")] = 0; // removes \n at end
-
-            akin_diff_def (tree, name1, name2);
-
-            int ans = ask_yes_no ("Хочешь найти разницу еще раз?\n");
-            if (ans != 'y')
-                break;
-            }
-
-        free (name1);
-        free (name2);
-        }
-
-    AT_SAY ("Хочешь визуальный дамп?\n");
-    ans = ask_yes_no ("");
-    if (ans == 'y')
-        {
+    if (ask_yes_no ("Хочешь визуальный дамп?\n") == 'y')
         akin_tree_graph_dump (tree);
-        }
 
     AT_SAY ("Пока! Удачи на сессии!\n");
     free_akin_tree (tree);
     free_file_text (&base);
     }
 
-void play_akin (AkinTree *tree)
+void guess_akin (AkinTree *tree)
     {
     assert (tree);
 
@@ -122,9 +54,9 @@ void play_akin (AkinTree *tree)
         AT_SAY ("%s - это о том что ты загадал?\n", tree->data);
         char ans = ask_yes_no ("");            
         if (ans == 'y')
-            play_akin (tree->left);
+            guess_akin (tree->left);
         else
-            play_akin (tree->right);
+            guess_akin (tree->right);
         
         return;
         }
@@ -138,7 +70,7 @@ void play_akin (AkinTree *tree)
         return;
         }
     
-    // wrong thing
+    // wrong guess
     char *name = (char*) calloc (MAX_AKIN_NAME_LEN, sizeof (*name)), 
          *question = (char*) calloc (MAX_AKIN_NAME_LEN, sizeof (*name));
     
@@ -156,6 +88,64 @@ void play_akin (AkinTree *tree)
     
     tree->data = question;
     tree->type = AT_QUESTION;
+    }
+
+void play_akin (AkinTree *tree)
+    {
+    assert (tree);
+
+    do {
+        guess_akin (tree);
+    } while (ask_yes_no ("Хочешь поиграть еще раз?\n") == 'y');
+
+    AT_SAY ("\nХорошо, теперь дерево такое:\n\n");
+    akin_tree_dump (tree);
+
+    AT_SAY ("\n\nХочешь сохранить базу данных в файл?\n");
+    if (ask_yes_no ("Сохранить? ") == 'y')
+        {
+        FILE *f_out = fopen ("akin_db.base", "w");
+        write_tree_to_base (tree, f_out);
+        AT_SAY ("Закончила сохранение\n");
+        }
+    }
+
+void play_def (AkinTree *tree)
+    {
+    assert (tree);
+
+    char *name = (char*) calloc (MAX_AKIN_NAME_LEN, sizeof (*name));
+    do {            
+        AT_SAY ("Введи имя: ");
+        fgets (name, MAX_AKIN_NAME_LEN, stdin);
+        name[strcspn(name, "\n")] = 0; // removes \n at end
+
+        akin_seek_def (tree, name);
+    } while (ask_yes_no ("Хочешь найти определение еще раз?\n") == 'y');
+    free (name);
+    }
+
+void play_dif (AkinTree *tree)
+    {
+    assert (tree);
+
+    char *name1 = (char*) calloc (MAX_AKIN_NAME_LEN, sizeof (*name1));
+    char *name2 = (char*) calloc (MAX_AKIN_NAME_LEN, sizeof (*name2));
+
+    do {
+        AT_SAY ("Введи первое имя: ");
+        fgets (name1, MAX_AKIN_NAME_LEN, stdin);
+        name1[strcspn(name1, "\n")] = 0; // removes \n at end
+        
+        AT_SAY ("Введи второе имя: ");
+        fgets (name2, MAX_AKIN_NAME_LEN, stdin);
+        name2[strcspn(name2, "\n")] = 0; // removes \n at end
+
+        akin_diff_def (tree, name1, name2);
+    } while (ask_yes_no ("Хочешь найти разницу еще раз?\n") == 'y');
+
+    free (name1);
+    free (name2);
     }
 
 void clear_input_buffer () 
@@ -350,6 +340,6 @@ void akin_diff_def (AkinTree *tree, const char *name1, const char *name2)
 #undef FAIL_SEEK
 #undef INIT_STK
 #undef DTOR_STK
-
+#undef PRINT_PROP
 
 
