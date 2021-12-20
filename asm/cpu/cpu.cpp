@@ -62,7 +62,9 @@ int main (int argc, char *argv[]) {
     execute_cpu (&cpu);
 
     cpu_dtor (&cpu);
-    printf ("DONE\n");
+    printf ("DONE\nInput anything to exit\n");
+    getchar ();
+    getchar ();
 
     return 0;
 }
