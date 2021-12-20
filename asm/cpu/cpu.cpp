@@ -235,10 +235,12 @@ int *get_arg (const char *bin, Cpu *cpu) {
             return nullptr;
         }
 
+        /*
         if (data < VID_RAM)
             Sleep (RAM_DELAY);
         else
             Sleep (VID_RAM_DELAY);
+        */
 
         DEB ("Got ram arg: %d\n", cpu->ram[data]);
         return cpu->ram + data;
@@ -254,10 +256,12 @@ int *get_arg (const char *bin, Cpu *cpu) {
             return nullptr;
         }
 
+        /*
         if (cpu->regs[data] < VID_RAM)
             Sleep (RAM_DELAY);
         else
             Sleep (VID_RAM_DELAY);
+        */
 
         DEB ("Got ram reg arg: %d\n", cpu->regs[cpu->regs[data]]);
         return cpu->ram + cpu->regs[data];
