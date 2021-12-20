@@ -5,67 +5,25 @@ digraph Tree{
 
 	node[color="red",fontsize=14];
 
-	4178214288[shape=record, label="/"];
-	4178213568[shape=record, label="-"];
-	4178213328[shape=record, label="^"];
-	4178213136[shape=record, label="+"];
-	4178214096[shape=record, label="^"];
-	4178214000[shape=record, label="x"];
-	4178214672[shape=record, label="2.000000"];
-	4178213088[shape=record, label="2.000000"];
-	4178214480[shape=record, label="0.500000"];
-	4178213520[shape=record, label="*"];
-	4178214048[shape=record, label="*"];
-	4178213472[shape=record, label="*"];
-	4178213808[shape=record, label="0.500000"];
-	4178213424[shape=record, label="^"];
-	4178213184[shape=record, label="+"];
-	4178213856[shape=record, label="^"];
-	4178213904[shape=record, label="x"];
-	4178214768[shape=record, label="2.000000"];
-	4178212944[shape=record, label="2.000000"];
-	4178213952[shape=record, label="-0.500000"];
-	4178214432[shape=record, label="*"];
-	4178188864[shape=record, label="x"];
-	4178189056[shape=record, label="2.000000"];
-	4178188432[shape=record, label="+"];
-	4178188720[shape=record, label="x"];
-	4178188528[shape=record, label="2.000000"];
-	4178189104[shape=record, label="+"];
-	4178188960[shape=record, label="^"];
-	4178188480[shape=record, label="x"];
-	4178189008[shape=record, label="2.000000"];
-	4178188384[shape=record, label="2.000000"];
+	643372944[shape=record, label="*"];
+	643372896[shape=record, label="c"];
+	643373328[shape=record, label="^"];
+	643373760[shape=record, label="x"];
+	643373712[shape=record, label="5"];
+	643373376[shape=record, label="*"];
+	643372720[shape=record, label="^"];
+	643372640[shape=record, label="x"];
+	643372592[shape=record, label="4"];
+	643372448[shape=record, label="5"];
 
-	4178214288 -> 4178213568[fontsize=12]
-	4178214288 -> 4178189104[fontsize=12]
-	4178213568 -> 4178213328[fontsize=12]
-	4178213568 -> 4178213520[fontsize=12]
-	4178213328 -> 4178213136[fontsize=12]
-	4178213328 -> 4178214480[fontsize=12]
-	4178213136 -> 4178214096[fontsize=12]
-	4178213136 -> 4178213088[fontsize=12]
-	4178214096 -> 4178214000[fontsize=12]
-	4178214096 -> 4178214672[fontsize=12]
-	4178213520 -> 4178214048[fontsize=12]
-	4178213520 -> 4178188432[fontsize=12]
-	4178214048 -> 4178213472[fontsize=12]
-	4178214048 -> 4178214432[fontsize=12]
-	4178213472 -> 4178213808[fontsize=12]
-	4178213472 -> 4178213424[fontsize=12]
-	4178213424 -> 4178213184[fontsize=12]
-	4178213424 -> 4178213952[fontsize=12]
-	4178213184 -> 4178213856[fontsize=12]
-	4178213184 -> 4178212944[fontsize=12]
-	4178213856 -> 4178213904[fontsize=12]
-	4178213856 -> 4178214768[fontsize=12]
-	4178214432 -> 4178188864[fontsize=12]
-	4178214432 -> 4178189056[fontsize=12]
-	4178188432 -> 4178188720[fontsize=12]
-	4178188432 -> 4178188528[fontsize=12]
-	4178189104 -> 4178188960[fontsize=12]
-	4178189104 -> 4178188384[fontsize=12]
-	4178188960 -> 4178188480[fontsize=12]
-	4178188960 -> 4178189008[fontsize=12]
+	643372944 -> 643372896[fontsize=12]
+	643372944 -> 643373376[fontsize=12]
+	643372896 -> 643373328[fontsize=12]
+	643373328 -> 643373760[fontsize=12]
+	643373328 -> 643373712[fontsize=12]
+	643373376 -> 643372720[fontsize=12]
+	643373376 -> 643372448[fontsize=12]
+	643372720 -> 643372640[fontsize=12]
+	643372720 -> 643372592[fontsize=12]
 
 }

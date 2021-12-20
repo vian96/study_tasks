@@ -14,7 +14,7 @@ int main ()
     // "((((1)*((x)+(0)))/(1))^(0))", 
     // "(((27)+((x)*(38)))^((34)/((27)/(4)))",
 
-    const char *expr = "(((x)+(2))/((((x)^(2))+(2))^(0.5)",
+    const char *expr = "(sin((x)^(5)))",
         **to_read = &expr;
 
     DiffTree *tree = read_expression (to_read, nullptr);

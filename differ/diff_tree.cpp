@@ -9,7 +9,7 @@
 //#define NDEBUG
 
 #ifndef NDEBUG
-#define DEB(...) printf (__VA_ARGS__)
+#define DEB(...)  printf (__VA_ARGS__)
 #else
 #define DEB(...) 
 #endif
@@ -422,57 +422,64 @@ DiffTree *dt_differ (DiffTree *tree, DiffTree *parent)
     assert (parent);
 
     switch (tree->type)
-    {
-    case DT_NUMBER: 
-        return new_const (0);
-
-    case DT_VAR:
-        // TODO create differ for different vars
-        return new_const (1);
-    
-    case DT_OPERATOR:
-        switch (tree->data.oper)
         {
-        case DTO_PLUS:
-            DEB ("Differentiating plus\n");
-            return new_op (DTO_PLUS, D (L), D (R));
-        case DTO_MINUS:
-            DEB ("Differentiating minus\n");
-            return new_op (DTO_MINUS, D (L), D (R));
-        case DTO_MUL:
-            DEB ("Differentiating mul\n");
-            return new_op (DTO_PLUS, new_op (DTO_MUL, D(L), C(R)), new_op (DTO_MUL, D(R), C(L)));
-        case DTO_DIV:
-            DEB ("Differentiating div\n");
-            return new_op (DTO_DIV, 
-                        new_op (DTO_MINUS, 
-                            new_op (DTO_MUL, D(L), C(R)), new_op (DTO_MUL, D(R), C(L))),
-                        new_op (DTO_POW, C (R), new_const (2)));
-        // TODO expand it to non-constant power
-        case DTO_POW:
-            DEB ("Differentiating pow\n");
-            return new_op (DTO_MUL, new_op (DTO_MUL, 
-                            C (R), new_op (DTO_POW, 
-                                C (L), new_op (DTO_MINUS, C (R), new_const (1)))), D (L));
-        case DTO_LN:
-            DEB ("Differentiating ln\n");
-            return new_op (DTO_DIV, D (R), C (R));
-        case DTO_SIN:
-            DEB ("Differentiating sin\n");
-            return new_op (DTO_MUL, new_op (DTO_COS, nullptr, C (R)), D (R));
-        case DTO_COS:
-            DEB ("Differentiating cos\n");
-            return new_op (DTO_MUL, new_const (-1), 
-                        new_op (DTO_MUL, new_op (DTO_SIN, nullptr, C (R)), D (R)));
+        case DT_NUMBER: 
+            return new_const (0);
+
+        case DT_VAR:
+            // TODO create differ for different vars
+            return new_const (1);
+        
+        case DT_OPERATOR:
+            switch (tree->data.oper)
+                {
+                case DTO_PLUS:
+                    DEB ("Differentiating plus\n");
+                    return new_op (DTO_PLUS, D (L), D (R));
+                
+                case DTO_MINUS:
+                    DEB ("Differentiating minus\n");
+                    return new_op (DTO_MINUS, D (L), D (R));
+                
+                case DTO_MUL:
+                    DEB ("Differentiating mul\n");
+                    return new_op (DTO_PLUS, new_op (DTO_MUL, D(L), C(R)), new_op (DTO_MUL, D(R), C(L)));
+                
+                case DTO_DIV:
+                    DEB ("Differentiating div\n");
+                    return new_op (DTO_DIV, 
+                                new_op (DTO_MINUS, 
+                                    new_op (DTO_MUL, D(L), C(R)), new_op (DTO_MUL, D(R), C(L))),
+                                new_op (DTO_POW, C (R), new_const (2)));
+                
+                // TODO expand it to non-constant power
+                
+                case DTO_POW:
+                    DEB ("Differentiating pow\n");
+                    return new_op (DTO_MUL, new_op (DTO_MUL, 
+                                    C (R), new_op (DTO_POW, 
+                                        C (L), new_op (DTO_MINUS, C (R), new_const (1)))), D (L));
+                case DTO_LN:
+                    DEB ("Differentiating ln\n");
+                    return new_op (DTO_DIV, D (R), C (R));
+                
+                case DTO_SIN:
+                    DEB ("Differentiating sin\n");
+                    return new_op (DTO_MUL, new_op (DTO_COS, nullptr, C (R)), D (R));
+                
+                case DTO_COS:
+                    DEB ("Differentiating cos\n");
+                    return new_op (DTO_MUL, new_const (-1), 
+                                new_op (DTO_MUL, new_op (DTO_SIN, nullptr, C (R)), D (R)));
+                default:
+                    printf ("ERROR: unnknown type of operator while differ, it is %c\n", tree->data.oper);
+                    return nullptr;
+                }
 
         default:
-            printf ("ERROR: unnknown type of operator while differ, it is %c\n", tree->data.oper);
+            printf ("ERROR: unnknown type of tree while differ, it is %d\n", tree->type);
             return nullptr;
         }
-    default:
-        printf ("ERROR: unnknown type of tree while differ, it is %d\n", tree->type);
-        return nullptr;
-    }
     }
 
 #undef L
@@ -568,7 +575,7 @@ int simplify_diff_tree (DiffTree *tree)
             count += temp;
             }
 
-    temp = 1; // is needed because of while
+    temp = 1; // is needed because of while, maybe change to do..while ?
     if (R)
         while (temp != 0)
             {
@@ -665,15 +672,15 @@ double calculate_diff_tree (DiffTree *tree, int *count)
         // TODO DSL to reduce code-repeat
         switch (tree->data.oper)
         {
-#define PLUS(L_, R_) L_ + R_
-#define MINUS(L_, R_) L_ - R_
-#define MUL(L_, R_) L_ * R_
-#define DIV(L_, R_) L_ / R_
-#define POW(L_, R_) pow (L_, R_)
-#define LN(L_, R_) log (R_)
-#define SIN(L_, R_) sin (R_)
-#define COS(L_, R_) cos (R_)
 
+#define PLUS( L_, R_)   L_ + R_
+#define MINUS(L_, R_)   L_ - R_
+#define MUL(  L_, R_)   L_ * R_
+#define DIV(  L_, R_)   L_ / R_
+#define POW(  L_, R_)   pow (L_, R_)
+#define LN(   L_, R_)   log (R_)
+#define SIN(  L_, R_)   sin (R_)
+#define COS(  L_, R_)   cos (R_)
 
 #define CALC_VAL(name_) case DTO_##name_: value = name_(L, R); break;
         CALC_VAL (PLUS)
@@ -920,7 +927,7 @@ bool check_diff_tree (DiffTree *tree)
 #define PLUS(a,b) ((a) + (b))
 #define MUL(a,b) ((a) * (b))
 
-// TODO move to function, idk why it is not already done
+// TODO move to function, but i need to deal with op param
 #define CHECK_CLOSE(op_name, op, frst, scnd)                        \
             if (is_number (frst))                                      \
                 {                                                   \
@@ -996,7 +1003,6 @@ int dt_calc_close (DiffTree *tree)
     return 0;
     }
 
-
 #undef is_number
 #undef is_any_num
 #undef is_op
@@ -1027,8 +1033,6 @@ int oper_precedence (DiffTreeOper oper)
     case DTO_INVALID:
         // TODO do i need inf? they all are already magic numbers
         return 1<<30;
-
-        return 0;
 
     default:
         printf ("Unknown operator %d precedence\n", oper);
