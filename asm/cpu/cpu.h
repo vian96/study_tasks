@@ -9,8 +9,8 @@ const int NUM_REGS = 16;
 
 const int PIXEL_X = 100;
 const int PIXEL_Y = 30;
-const int VID_RAM = 2000; // begin of video ram
-const int STATIC_RAM = 2000; // number of static ram
+const int VID_RAM = 5000; // begin of video ram
+const int STATIC_RAM = 5000; // number of static ram
 const int NUM_RAM = VID_RAM + PIXEL_X * PIXEL_Y + 10 + STATIC_RAM;
 
 const int RAM_DELAY = 0;
